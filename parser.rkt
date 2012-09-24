@@ -1,14 +1,19 @@
 #lang racket
 
-(require "insn.rkt"
+(require "syntax.rkt"
+         "opcodes.rkt"
          parser-tools/yacc
          parser-tools/lex
          (prefix-in : parser-tools/lex-sre))
 
+;; Contract for parser result
+(define insn-list/c (listof (or/c label-stx? insn-stx?)))
+
+;; Module exports
 (provide/contract
- [parse (-> input-port? string? (listof (or/c label? insn?)))]
- [parse-string (-> string? (listof (or/c label? insn?)))]
- [parse-file (-> string? (listof (or/c label? insn?)))])
+ [parse (-> input-port? string? insn-list/c)]
+ [parse-string (-> string? insn-list/c)]
+ [parse-file (-> string? insn-list/c)])
 
 ;; Utils
 (define (bin-string->number str)
@@ -17,7 +22,7 @@
    2))
 
 ;; Lexer tokens definition
-(define-tokens       data  (REGISTER ID LABEL NUMBER))
+(define-tokens       data  (ID LABEL LABEL-REF REGISTER NUMBER))
 (define-empty-tokens delim (COMMA EOF))
 
 ;; Lexer
@@ -31,12 +36,12 @@
    
    ;; Comma
    [#\, 'COMMA]
-
+      
    ;; Register
    [(:or (:: (:or #\r #\R) (:/ "0" "8"))
          (:: (:or #\s #\S #\b #\B #\i #\I) (:or #\p #\P)))
     (token-REGISTER (string->symbol (string-downcase lexeme)))]
-      
+   
    ;; ID
    [(:: alphabetic (:+ (:or alphabetic numeric)))
     (token-ID (string->symbol lexeme))]
@@ -56,6 +61,40 @@
    [(:: "0x" (:+ (:or (:/ "0" "9") (:/ "a" "f") (:/ "A" "F"))))
     (token-NUMBER (string->number (substring lexeme 2) 16))]))
 
+
+;; instruction syntax construction
+(define (raise-invalid-argcount opcode expected received source-name start)
+  (raise-user-error
+   (format 
+    "~a: parse error at line ~a column ~a : ~a opcode expects ~a arguments but received ~a."
+    source-name
+    (position-line start)
+    (position-col start)
+    opcode
+    expected
+    received)))
+
+(define (raise-invalid-opcode opcode source-name start)
+  (raise-user-error
+   (format 
+    "~a: parse error at line ~a column ~a : invalid opcode ~a."
+    source-name
+    (position-line start)
+    (position-col start)
+    opcode)))
+
+
+(define (check-opcode-stx opcode argcount source-name start)
+  (define argc (opcode-argcount opcode)) 
+  (cond
+    [(false? argc)
+     (raise-invalid-opcode opcode source-name start)]
+    [(not (= argc argcount))
+     (raise-invalid-argcount opcode argc argcount source-name start)])) 
+
+  
+;; TODO : implement args checking
+
 ;; Parser
 (define (asm-parser source-name)
   (parser
@@ -72,21 +111,40 @@
              source-name
              (position-line start)
              (position-col start)
-             val))))
+             name))))
 
    (grammar
     (s
      [(insn-list) (reverse $1)])
     
-    (insn 
-     [(LABEL) (label $1)]
-     [(ID REGISTER) (insn $1 (list $2))]
-     [(ID REGISTER COMMA NUMBER) (insn $1 (list $2 $4))]
-     [(ID REGISTER COMMA REGISTER) (insn $1 (list $2 $4))])
+    (insn [(LABEL) (label-stx $1)]
+          [(ID)
+           (begin
+             (check-opcode-stx $1 0 source-name $1-start-pos)
+             (insn-stx (opcode-stx $1) #f #f))]
+          [(ID ID) ;; match OPCODE LABEL-REF
+           (begin
+             (check-opcode-stx $1 1 source-name $1-start-pos)
+             (insn-stx (opcode-stx $1) (label-stx $2) #f))]
+          [(ID REGISTER)
+           (begin
+             (check-opcode-stx $1 1 source-name $1-start-pos)
+             (insn-stx (opcode-stx $1) (register-stx $2) #f))]
+          [(ID REGISTER COMMA NUMBER) 
+           (begin
+             (check-opcode-stx $1 2 source-name $1-start-pos)
+             (insn-stx (opcode-stx $1)
+                       (register-stx $2)
+                       (number-stx $4)))]
+          [(ID REGISTER COMMA REGISTER)
+           (begin
+             (check-opcode-stx $1 2 source-name $1-start-pos)
+             (insn-stx (opcode-stx $1)
+                       (register-stx $2)
+                       (register-stx $4)))])
     
-    (insn-list
-     [() null]
-     [(insn-list insn) (cons $2 $1)]))))
+    (insn-list [() null]
+               [(insn-list insn) (cons $2 $1)]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public parser API

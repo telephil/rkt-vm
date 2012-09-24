@@ -1,5 +1,37 @@
 #lang racket
 
+(provide/contract
+ [opcode-argcount (symbol? . -> . (or/c integer? #f))])
+
+(define (opcode-argcount opcode)
+  (hash-ref opcodes-argcount opcode #f))
+
+(define opcodes-argcount
+  #hash((nop . 0)
+        (mov . 2)
+        (and . 2)
+        (or . 2)
+        (xor . 2)
+        (not . 1)
+        (shl . 1)
+        (shr . 1)
+        (add . 2)
+        (sub . 2)
+        (mul . 2)
+        (div . 2)
+        (inc . 1)
+        (dec . 1)
+        (jmp . 1)
+        (jz . 1)
+        (jnz . 1)
+        (je . 1)
+        (jne . 1)
+        (jg . 1)
+        (jge . 1)
+        (jl . 1)
+        (jle . 1)))
+
+#|
 (struct opcode
   (name argcount))
 
@@ -28,3 +60,4 @@
    (opcode "jge" 1)
    (opcode "jl"  1)
    (opcode "jle" 1)))
+|#
