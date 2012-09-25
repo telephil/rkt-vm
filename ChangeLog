@@ -1,3 +1,9 @@
+2012-09-26  Philippe Mechaï  <philippe.mechai@gmail.com>
+
+	* compiler.rkt: Complete implementation of the compiler
+	Still missing (compile-file) method though
+	(compile-string): 
+
 2012-09-25  Philippe Mechaï  <philippe.mechai@gmail.com>
 
 	* parser.rkt: improved parsing (still a bug when there is no newline at end of file)
