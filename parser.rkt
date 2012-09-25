@@ -23,7 +23,7 @@
 
 ;; Lexer tokens definition
 (define-tokens       data  (ID LABEL LABEL-REF REGISTER NUMBER))
-(define-empty-tokens delim (COMMA EOF))
+(define-empty-tokens delim (COMMA NEWLINE EOF))
 
 ;; Lexer
 (define asm-lexer
@@ -32,10 +32,13 @@
    [(eof) 'EOF]
    
    ;; Skip whitespaces
-   [(:or #\tab #\space #\newline) (return-without-pos (asm-lexer input-port))]
+   [(:or #\tab #\space) (return-without-pos (asm-lexer input-port))]
    
    ;; Comma
    [#\, 'COMMA]
+   
+   ;; Newline
+   [ #\newline 'NEWLINE]
       
    ;; Register
    [(:or (:: (:or #\r #\R) (:/ "0" "8"))
@@ -117,26 +120,26 @@
     (s
      [(insn-list) (reverse $1)])
     
-    (insn [(LABEL) (label-stx $1)]
-          [(ID)
+    (insn [(LABEL) (label-stx $1)]          
+          [(ID NEWLINE)
            (begin
              (check-opcode-stx $1 0 source-name $1-start-pos)
              (insn-stx (opcode-stx $1) #f #f))]
-          [(ID ID) ;; match OPCODE LABEL-REF
+          [(ID ID NEWLINE) ;; match OPCODE LABEL-REF
            (begin
              (check-opcode-stx $1 1 source-name $1-start-pos)
              (insn-stx (opcode-stx $1) (label-stx $2) #f))]
-          [(ID REGISTER)
+          [(ID REGISTER NEWLINE)
            (begin
              (check-opcode-stx $1 1 source-name $1-start-pos)
              (insn-stx (opcode-stx $1) (register-stx $2) #f))]
-          [(ID REGISTER COMMA NUMBER) 
+          [(ID REGISTER COMMA NUMBER NEWLINE) 
            (begin
              (check-opcode-stx $1 2 source-name $1-start-pos)
              (insn-stx (opcode-stx $1)
                        (register-stx $2)
                        (number-stx $4)))]
-          [(ID REGISTER COMMA REGISTER)
+          [(ID REGISTER COMMA REGISTER NEWLINE)
            (begin
              (check-opcode-stx $1 2 source-name $1-start-pos)
              (insn-stx (opcode-stx $1)
