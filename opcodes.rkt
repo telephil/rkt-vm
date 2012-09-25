@@ -1,35 +1,48 @@
 #lang racket
 
 (provide/contract
+ [opcode->bytecode (symbol? . -> . (or/c integer? #f))]
  [opcode-argcount (symbol? . -> . (or/c integer? #f))])
 
-(define (opcode-argcount opcode)
-  (hash-ref opcodes-argcount opcode #f))
+;; Return the opcode for the given OP
+;; If OP does not exist return #f
+(define (opcode->bytecode op)
+  (define res (hash-ref opcodes op #f))
+  (or (and res (first res))))
 
-(define opcodes-argcount
-  #hash((nop . 0)
-        (mov . 2)
-        (and . 2)
-        (or . 2)
-        (xor . 2)
-        (not . 1)
-        (shl . 1)
-        (shr . 1)
-        (add . 2)
-        (sub . 2)
-        (mul . 2)
-        (div . 2)
-        (inc . 1)
-        (dec . 1)
-        (jmp . 1)
-        (jz . 1)
-        (jnz . 1)
-        (je . 1)
-        (jne . 1)
-        (jg . 1)
-        (jge . 1)
-        (jl . 1)
-        (jle . 1)))
+;; Return the argcount for the given op
+;; If OP does not exist return #f
+(define (opcode-argcount op)
+  (define res (hash-ref opcodes op #f))
+  (or (and res (second res))))
+
+(define opcodes
+  ;; Hash of SYMBOL -> '(OPCODE ARGCOUNT)
+  #hash((nop . (#x00 0))
+        (mov . (#x01 2))
+        (and . (#x02 2))
+        (or  . (#x03 2))
+        (xor . (#x04 2))
+        (not . (#x05 1))
+        (shl . (#x06 1))
+        (shr . (#x07 1))
+        (add . (#x08 2))
+        (sub . (#x09 2))
+        (mul . (#x0A 2))
+        (div . (#x0B 2))
+        (inc . (#x0C 1))
+        (dec . (#x0D 1))
+        (jmp . (#x0E 1))
+        (jz .  (#x0F 1))
+        (jnz . (#x10 1))
+        (je .  (#x11 1))
+        (jne . (#x12 1))
+        (jg .  (#x13 1))
+        (jge . (#x14 1))
+        (jl .  (#x15 1))
+        (jle . (#x16 1))
+        (push . (#x17 1))
+        (pop . #(x18 1))))
 
 #|
 (struct opcode
