@@ -1,0 +1,8 @@
+2012-09-25  Philippe Mechaï  <philippe.mechai@gmail.com>
+
+	* parser.rkt: improved parsing (still a bug when there is no newline at end of file)
+
+2012-09-24  Philippe Mechaï  <philippe.mechai@gmail.com>
+
+	* parser.rkt: parser implementation
+
