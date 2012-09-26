@@ -128,7 +128,7 @@
           [(ID ID NEWLINE) ;; match OPCODE LABEL-REF
            (begin
              (check-opcode-stx $1 1 source-name $1-start-pos)
-             (insn-stx (opcode-stx $1) (label-stx $2) #f))]
+             (insn-stx (opcode-stx $1) (label-stx (symbol->string $2)) #f))]
           [(ID REGISTER NEWLINE)
            (begin
              (check-opcode-stx $1 1 source-name $1-start-pos)

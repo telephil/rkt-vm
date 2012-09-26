@@ -21,10 +21,10 @@
     (iter src 0 (make-hash))))
 
 (define (integer->s16bytes n)
-  (integer->integer-bytes n 2 (system-big-endian?)))
+  (integer->integer-bytes n 2 #t (system-big-endian?)))
 
 (define (integer->s64bytes n)
-  (integer->integer-bytes n 8 (system-big-endian?)))
+  (integer->integer-bytes n 8 #t (system-big-endian?)))
 
 (define (tag n bit)
   (bitwise-ior n (arithmetic-shift 1 bit)))
@@ -39,7 +39,7 @@
     [(number-stx? arg) (tag opcode (sub1 bit))
      (integer->s64bytes (number-stx-value arg))]
     [(label-stx? arg) (tag opcode (sub1 bit))
-     (define addr (hash-ref labels (symbol->string (label-stx-name arg))))
+     (define addr (hash-ref labels (label-stx-name arg)))
      (integer->s64bytes addr)]))
 
 (define (encode-insn stx labels)
