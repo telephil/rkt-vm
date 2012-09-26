@@ -1,6 +1,6 @@
 #lang racket
 
-(require "parser.rkt"
+(require "asm-parser.rkt"
          "syntax.rkt"
          "registers.rkt"
          "opcodes.rkt")
