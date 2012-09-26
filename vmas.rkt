@@ -1,21 +1,36 @@
 #lang racket
 
-(require "private/assembler.rkt")
-
 ;; VM assembler driver
 
-(printf "VM Assembler~%")
+(require racket/cmdline
+	 "private/assembler.rkt"
+	 "info.rkt")
 
-(define args (current-command-line-arguments))
+(printf "VM Assembler v~a~%" vm-version)
 
-(when (zero? (vector-length args))
-  (printf "Usage: vmas <filename>~%")
-  (exit 1))
+;; Command-line parsing
+(define outfilename (make-parameter "out.bin"))
 
-(define filename (vector-ref args 0))
-(define outfilename (string-replace filename ".asm" ".bin"))
-(define bc (compile-file filename))
+(define (file-to-assemble)
+  (command-line
+   #:program "vmas"
+   #:once-each
+   [("-o" "--out") output-filename "Output file name"
+    (outfilename output-filename)]
+   #:args (filename)
+   filename))
 
-(with-output-to-file outfilename
-  (lambda ()
-    (write-bytes bc)))
+;; Main
+(define (main)
+  (define filename (file-to-assemble))
+  (define bc (compile-file filename))
+
+  (with-output-to-file (outfilename) #:exists 'replace
+    (lambda ()
+      (write-bytes bc)))
+
+  (values))
+
+;; Execute main
+(main)
+
