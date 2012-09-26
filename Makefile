@@ -14,4 +14,4 @@ vmas:	$(vmas_SOURCES) $(assembler_SOURCES)
 	raco exe $(vmas_SOURCES)
 
 clean:
-	@rm -f vmas
+	rm -f vmas
