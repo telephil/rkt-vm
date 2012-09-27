@@ -6,29 +6,30 @@
 	 "private/assembler.rkt"
 	 "info.rkt")
 
-(printf "VM Assembler v~a~%" vm-version)
+(define (show-version)
+  (printf "VM Assembler v~a~%" vm-version)
+  (printf "Copyright (C) 2012 ~a~%" vm-author)
+  (exit 0))
 
 ;; Command-line parsing
-(define outfilename (make-parameter "out.bin"))
+(define out (make-parameter "out.bin"))
 
 (define (file-to-assemble)
   (command-line
-   #:program "vmas"
    #:once-each
+   [("-v" "--version") "Display the assembler version"
+    (show-version)]
    [("-o" "--out") output-filename "Output file name"
-    (outfilename output-filename)]
+    (out output-filename)]
    #:args (filename)
    filename))
 
 ;; Main
 (define (main)
   (define filename (file-to-assemble))
-  (define bc (compile-file filename))
-
-  (with-output-to-file (outfilename) #:exists 'replace
+  (with-output-to-file (out) #:exists 'replace
     (lambda ()
-      (write-bytes bc)))
-
+      (compile-file filename)))
   (values))
 
 ;; Execute main
