@@ -1,0 +1,14 @@
+
+* Bugs
+
+** TODO Parser fails when no newline at end of file
+
+
+* To improve
+
+** TODO Better error handling 
+
+
+* To implement
+
+** TODO Unload program from memory
