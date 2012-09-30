@@ -11,7 +11,7 @@
 
 (define (arg-size stx)
   (cond
-   [(register-stx? stx) 2]
+   [(register-stx? stx) 1]
    [(number-stx? stx) 8]
    [(label-stx? stx) 8]
    [else 0]))
@@ -25,7 +25,7 @@
 		       (cond
 			([label-stx? insn] #f) ;; do not include labels
 			([insn-stx? insn]
-			 (define sz (+ 2 ;; 2 = opcode size = 16 bits
+			 (define sz (+ 4 ;; = opcode size = 32 bits
 				       (arg-size (insn-stx-arg1 insn))
 				       (arg-size (insn-stx-arg2 insn))))
 			 (set! off (+ off sz))
@@ -48,6 +48,9 @@
 (define (integer->s16bytes n)
   (integer->integer-bytes n 2 #t (system-big-endian?)))
 
+(define (integer->s32bytes n)
+  (integer->integer-bytes n 4 #t (system-big-endian?)))
+
 (define (integer->s64bytes n)
   (integer->integer-bytes n 8 #t (system-big-endian?)))
 
@@ -57,24 +60,38 @@
 (define (encode-register stx)
   (bytes (register->bytecode (register-stx-name stx))))
 
-(define (encode-arg opcode arg bit labels)
+(define (encode-arg arg labels)
   (cond
-    [(register-stx? arg) (tag opcode bit)
+    [(register-stx? arg)
      (encode-register arg)]
-    [(number-stx? arg) (tag opcode (sub1 bit))
+    [(number-stx? arg)
      (integer->s64bytes (number-stx-value arg))]
-    [(label-stx? arg) (tag opcode (sub1 bit))
+    [(label-stx? arg)
      (define addr (hash-ref labels (label-stx-name arg)))
      (integer->s64bytes addr)]))
+
+(define (tag-arg opcode arg bit)
+  (cond
+    [(register-stx? arg)
+     (tag opcode bit)]
+    [(number-stx? arg)
+     (tag opcode (sub1 bit))]
+    [(label-stx? arg)
+     (tag opcode (sub1 bit))]))
+
+(define (encode-opcode opcode arg1 arg2)
+  (when arg1 (set! opcode (tag-arg opcode arg1 15)))
+  (when arg2 (set! opcode (tag-arg opcode arg2 13)))
+  opcode)
 
 (define (encode-insn stx labels)
   (define opcode (opcode->bytecode (opcode-stx-name (insn-stx-op stx))))  
   (define arg1 (insn-stx-arg1 stx))
-  (define encoded-arg1 (when arg1 (encode-arg opcode arg1 15 labels)))  
+  (define encoded-arg1 (when arg1 (encode-arg arg1 labels)))  
   (define arg2 (insn-stx-arg2 stx))
-  (define encoded-arg2 (when arg2 (encode-arg opcode arg2 13 labels)))
+  (define encoded-arg2 (when arg2 (encode-arg arg2 labels)))
   ;; Write encoded opcode and args
-  (write-bytes (integer->s16bytes opcode))
+  (write-bytes (integer->s32bytes (encode-opcode opcode arg1 arg2)))
   (unless (void? encoded-arg1)
     (write-bytes encoded-arg1))
   (unless (void? encoded-arg2)
@@ -95,7 +112,7 @@
   (with-output-to-bytes
    (λ ()
      (write-bytes (string->bytes/utf-8 "VMBC"))
-     (write-bytes (bytes (hash-ref labels "start" 0)))
+     (write-bytes (integer->s16bytes (hash-ref labels "start" 0)))
      (for-each (λ (stx)
 		  (encode stx labels)) src))))
 
