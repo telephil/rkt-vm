@@ -29,7 +29,7 @@
   (define filename (file-to-assemble))
   (with-output-to-file (out) #:exists 'replace
     (lambda ()
-      (compile-file filename)))
+      (write-bytes (compile-file filename))))
   (values))
 
 ;; Execute main
