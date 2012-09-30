@@ -9,15 +9,40 @@
  [compile-string (string? . -> . bytes?)]
  [compile-file (string? . -> . bytes?)])
 
+(define (arg-size stx)
+  (cond
+   [(register-stx? stx) 2]
+   [(number-stx? stx) 8]
+   [(label-stx? stx) 8]
+   [else 0]))
+
+(define (compute-offsets src)
+  (define off 0)
+  (list->vector
+   (filter-not false?
+	       (cons 0
+		     (for/list ([insn src])
+		       (cond
+			([label-stx? insn] #f) ;; do not include labels
+			([insn-stx? insn]
+			 (define sz (+ 2 ;; 2 = opcode size = 16 bits
+				       (arg-size (insn-stx-arg1 insn))
+				       (arg-size (insn-stx-arg2 insn))))
+			 (set! off (+ off sz))
+			 off)))))))
+
 (define (compute-label-addresses src)
+  (define offsets (compute-offsets src))
   (letrec ([iter (λ (src idx h)
                    (cond
                      ([null? src] h)
                      (else
                       (define insn (car src))
-                      (when (label-stx? insn)
-                        (hash-set! h (label-stx-name insn) idx))
-                      (iter (cdr src) (add1 idx) h))))])
+                      (if (label-stx? insn)
+			  (begin
+			    (hash-set! h (label-stx-name insn) (vector-ref offsets idx))
+			    (iter (cdr src) idx h))
+			  (iter (cdr src) (add1 idx) h)))))])
     (iter src 0 (make-hash))))
 
 (define (integer->s16bytes n)
@@ -56,10 +81,8 @@
     (write-bytes encoded-arg2)))
 
 (define (encode stx labels)
-  (cond
-    ([label-stx? stx] 
-     (write-bytes (integer->s16bytes (opcode->bytecode 'nop))))
-    ([insn-stx? stx] (encode-insn stx labels))))
+  (when (insn-stx? stx)
+    (encode-insn stx labels)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Compiler public API
