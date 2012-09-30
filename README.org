@@ -1,0 +1,13 @@
+* rkt-vm: A useless Virtual Machine developed using Racket
+
+rkt-vm is a simple Virtual Machine build using Racket.
+
+It provides:
+- an assembly to bytecode compiler, 
+- a virtual machine able to load and execute bytecode,
+- a debugger (not yet)
+
+All of the code is developed using racket (only v5.3 has been tested)
+
+I have various things I have in mind that will be implemented soon or later.
+You can find a description of theses ideas in the todo.org file.
