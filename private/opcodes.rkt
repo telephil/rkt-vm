@@ -7,70 +7,53 @@
 ;; Return the opcode for the given OP
 ;; If OP does not exist return #f
 (define (opcode->bytecode op)
-  (define res (hash-ref opcodes op #f))
-  (or (and res (first res))))
+  (define res (hash-ref opcode-by-symbol op #f))
+  (or (and res (opcode-bytecode res))))
 
 ;; Return the argcount for the given op
 ;; If OP does not exist return #f
 (define (opcode-argcount op)
-  (define res (hash-ref opcodes op #f))
-  (or (and res (second res))))
+  (define res (hash-ref opcode-by-symbol op #f))
+  (or (and res (opcode-argc res))))
 
-(define opcodes
-  ;; Hash of SYMBOL -> '(OPCODE ARGCOUNT)
-  #hash((nop . (#x00 0))
-        (mov . (#x01 2))
-        (and . (#x02 2))
-        (or  . (#x03 2))
-        (xor . (#x04 2))
-        (not . (#x05 1))
-        (shl . (#x06 1))
-        (shr . (#x07 1))
-        (add . (#x08 2))
-        (sub . (#x09 2))
-        (mul . (#x0A 2))
-        (div . (#x0B 2))
-        (inc . (#x0C 1))
-        (dec . (#x0D 1))
-        (jmp . (#x0E 1))
-        (jz .  (#x0F 1))
-        (jnz . (#x10 1))
-        (je .  (#x11 1))
-        (jne . (#x12 1))
-        (jg .  (#x13 1))
-        (jge . (#x14 1))
-        (jl .  (#x15 1))
-        (jle . (#x16 1))
-        (push . (#x17 1))
-        (pop . #(x18 1))))
+(struct opcode (symbol bytecode argc))
 
-#|
-(struct opcode
-  (name argcount))
-
+;; List of opcodes
 (define opcodes
   (list
-   (opcode "nop" 0)
-   (opcode "mov" 2)
-   (opcode "and" 2)
-   (opcode "or"  2)
-   (opcode "xor" 2)
-   (opcode "not" 1)
-   (opcode "shl" 1)
-   (opcode "shr" 1)
-   (opcode "add" 2)
-   (opcode "sub" 2)
-   (opcode "mul" 2)
-   (opcode "div" 2)
-   (opcode "inc" 1)
-   (opcode "dec" 1)
-   (opcode "jmp" 1)
-   (opcode "jz"  1)
-   (opcode "jnz" 1)
-   (opcode "je"  1)
-   (opcode "jne" 1)
-   (opcode "jg"  1)
-   (opcode "jge" 1)
-   (opcode "jl"  1)
-   (opcode "jle" 1)))
-|#
+   (opcode 'nop  #x00 0)
+   (opcode 'mov  #x01 2)
+   (opcode 'and  #x02 2)
+   (opcode 'or   #x03 2)
+   (opcode 'xor  #x04 2)
+   (opcode 'not  #x05 1)
+   (opcode 'shl  #x06 1)
+   (opcode 'shr  #x07 1)
+   (opcode 'add  #x08 2)
+   (opcode 'sub  #x09 2)
+   (opcode 'mul  #x0A 2)
+   (opcode 'div  #x0B 2)
+   (opcode 'inc  #x0C 1)
+   (opcode 'dec  #x0D 1)
+   (opcode 'jmp  #x0E 1)
+   (opcode 'jz   #x0F 1)
+   (opcode 'jnz  #x10 1)
+   (opcode 'je   #x11 1)
+   (opcode 'jne  #x12 1)
+   (opcode 'jg   #x13 1)
+   (opcode 'jge  #x14 1)
+   (opcode 'jl   #x15 1)
+   (opcode 'jle  #x16 1)
+   (opcode 'push #x17 1)
+   (opcode 'pop  #x18 1)
+   (opcode 'end  #xFF 0)))
+
+;; Hash of SYMBOL -> OPCODE
+(define opcode-by-symbol
+  (for/hash ([op opcodes])
+    (values (opcode-symbol op) op)))
+
+;; Hash of BYTECODE -> OPCODE 
+(define opcode-by-bytecode
+  (for/hash ([op opcodes])
+    (values (opcode-bytecode op) op)))

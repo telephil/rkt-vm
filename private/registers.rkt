@@ -1,12 +1,36 @@
 #lang racket
 
 (provide/contract
- [register->bytecode (symbol? . -> . integer?)])
+ [register->bytecode (symbol? . -> . integer?)]
+ [register-count (-> integer?)]
+ [bytecode->register (integer? . -> . string?)])
+
+(struct register (name opcode))
 
 (define (register->bytecode register)
-  (hash-ref registers register))
+  (hash-ref registers-by-symbol register))
+
+(define (bytecode->register bc)
+  (register-name (vector-ref registers bc)))
+
+(define (register-count)
+  (vector-length registers))
 
 (define registers
+  #((register "r0" #x00)
+    (register "r1" #x01)
+    (register "r2" #x02)
+    (register "r3" #x03)
+    (register "r4" #x04)
+    (register "r5" #x05)
+    (register "r6" #x06)
+    (register "r7" #x07)
+    (register "r8" #x08)
+    (register "sp" #x09)
+    (register "bp" #x0A)
+    (register "ip" #x0B)))
+    
+(define registers-by-symbol
   #hash((r0 . #x00)
         (r1 . #x01)
         (r2 . #x02)
