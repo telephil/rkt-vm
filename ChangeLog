@@ -1,8 +1,18 @@
+2012-09-30  Philippe Mechaï  <philippe.mechai@gmail.com>
+
+	* private/assembler.rkt
+	(compute-label-addresses): now call a function that compute instruction list lines offsets to fix a bug in label to address translation.
+	(compute-offsets): New function that compute offset of lines in instruction list
+	(encode): Do not encode labels as nop instructions anymore
+
 2012-09-26  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* private/assembler.rkt (encode-arg): reflect label syntax change in asm-parser
+	(integer->s16bytes, integer->s64bytes): fix bug in encoding
+
+	* private/asm-parser.rkt (asm-parser): make label references syntax return a string instead of a symbol
+
 	* compiler.rkt: Complete implementation of the compiler
-	Still missing (compile-file) method though
-	(compile-string): 
 
 2012-09-25  Philippe Mechaï  <philippe.mechai@gmail.com>
 
