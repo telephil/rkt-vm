@@ -1,5 +1,9 @@
 2012-09-30  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* private/vm.rkt (run): Initial implementation
+
+	* private/opcodes.rkt (opcodes): fix argument count of SHL and SHR opcodes
+
 	* vmas.rkt (main): add forgotten call to (write-bytes) on (compile-file) output
 
 	* private/assembler.rkt
