@@ -1,14 +1,49 @@
+This file is used to keep track of bugs, improvements and general roadmap
 
 * Bugs
 
 ** TODO Parser fails when no newline at end of file
+   - Note taken on [2012-09-30 dim. 17:15] \\
+     The parser might have to be rewritten completely as it complains after a reduction conflict
+     Also I could not get it to understand arg-less instruction without a hack that force the last line to have a newline
+
+** DONE Labels are encoded as NOP instructions in assembly output
+
+** DONE Fix label address translation [100%]
+   - Note taken on [2012-09-30 dim. 15:57] \\
+     The assembler convert labels to address which is the line number in the parsed instruction vector.
+     This will not work when reading program from memory as there are no lines there !!!
+*** DONE Fix in assembler
+*** DONE Review program loader
+
+** DONE vmas output file are empty
+
+* Improvements
+
+** TODO Reduced opcode encoding size
+
+** TODO Better error handling [0%]
+*** TODO Parser errors
+*** TODO Assembler errors
+*** TODO Loader errors
 
 
-* To improve
+* Roadmap
 
-** TODO Better error handling 
+** TODO Binary execution [25%]
+*** DONE Load program in memory
+*** TODO Unload program from memory
+    - Note taken on [2012-09-30 dim. 15:57] \\
+      Should the whole memory be reset or do we consider that another program might also be loaded ?
+*** TODO Instruction execution
+    - Note taken on [2012-09-30 dim. 22:59] \\
+      Partly implemented
+*** TODO Stack definition and implemetation [0%]
+**** TODO Definition
+**** TODO Implementation
 
-
-* To implement
-
-** TODO Unload program from memory
+** TODO Debugger [0%]
+*** TODO Create CLI parser
+*** TODO Implement special debugging commands [0%]
+**** TODO Registers inspection
+**** TODO Memory inspection
