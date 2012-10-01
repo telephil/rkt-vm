@@ -17,18 +17,19 @@
   (vector-length registers))
 
 (define registers
-  #((register "r0" #x00)
-    (register "r1" #x01)
-    (register "r2" #x02)
-    (register "r3" #x03)
-    (register "r4" #x04)
-    (register "r5" #x05)
-    (register "r6" #x06)
-    (register "r7" #x07)
-    (register "r8" #x08)
-    (register "sp" #x09)
-    (register "bp" #x0A)
-    (register "ip" #x0B)))
+  (vector
+   (register "r0" #x00)
+   (register "r1" #x01)
+   (register "r2" #x02)
+   (register "r3" #x03)
+   (register "r4" #x04)
+   (register "r5" #x05)
+   (register "r6" #x06)
+   (register "r7" #x07)
+   (register "r8" #x08)
+   (register "sp" #x09)
+   (register "bp" #x0A)
+   (register "ip" #x0B)))
     
 (define registers-by-symbol
   #hash((r0 . #x00)
