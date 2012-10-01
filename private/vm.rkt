@@ -40,14 +40,35 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Flags management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define (maybe-set-zf arg)
+(define ZF_BIT 0)
+(define SF_BIT 2)
+
+(define (flag-set? bit)
   (define flags (vm-flags (current-vm)))
-  (when (zero? (arg))
-    (flags (bitwise-ior (flags) 1))))
+  (bitwise-bit-set? (flags) (arithmetic-shift 1 bit)))
+
+(define (flag-clear! bit)
+  (define flags (vm-flags (current-vm)))
+  (when (flag-set? bit)
+    (flags (bitwise-and (flags) (bitwise-not (arithmetic-shift 1 bit))))))
+
+(define (flag-set! bit predicate arg)
+  (define flags (vm-flags (current-vm)))
+  (if (predicate (arg))
+      (flags (bitwise-ior (flags) (arithmetic-shift 1 bit)))
+      (flag-clear! bit)))
 
 (define (zf?)
-  (define flags (vm-flags (current-vm)))
-  (bitwise-bit-set? (flags) 0))
+  (flag-set? ZF_BIT))
+
+(define (zf! arg)
+  (flag-set! ZF_BIT zero? arg))
+
+(define (sf?)
+  (flag-set? SF_BIT))
+
+(define (sf! arg)
+  (flag-set! SF_BIT negative? arg))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Stack operations
@@ -139,17 +160,21 @@
    [(= op MUL)  (arg1 (* (arg1) (arg2)))]
    [(= op DIV)  (arg1 (/ (arg1) (arg2)))]
    [(= op INC)  (arg1 (add1 (arg1)))]
-   [(= op DEC)  (arg1 (sub1 (arg1))) (maybe-set-zf arg1)]
-   [(= op CMP)  ]
+   [(= op DEC)  (arg1 (sub1 (arg1))) (zf! arg1)]
+   [(= op CMP)  (let ([res (make-parameter (- (arg1) (arg2)))])
+		  (zf! res)
+		  (sf! res))]
    [(= op JMP)  (ip (arg1))]
-   [(= op JZ)   (when (zf?) (ip (arg1)))]
+   [(= op JZ)   (when (zf?)   (ip (arg1)))]
    [(= op JNZ)  (unless (zf?) (ip (arg1)))]
-   [(= op JE)   (when (zf?) (ip (arg1)))]
+   [(= op JE)   (when (zf?)   (ip (arg1)))]
    [(= op JNE)  (unless (zf?) (ip (arg1)))]
-   [(= op JG) ]
-   [(= op JGE) ]
-   [(= op JL) ]
-   [(= op JLE) ]
+   [(= op JG)   (unless (sf?) (ip (arg1)))]
+   [(= op JGE)  (when (or (zf?) (not (sf?)))
+		  (ip (arg1)))]
+   [(= op JL)   (when (sf?) (ip (arg1)))]
+   [(= op JLE)  (when (or (zf?) (sf?))
+		  (ip (arg1)))]
    [(= op PUSH) (stack-push (arg1))]
    [(= op POP)  (arg1 (stack-pop))]
    [(= op CALL) (stack-push (ip)) (ip (arg1))]
