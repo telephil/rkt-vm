@@ -8,10 +8,19 @@ assembler_SOURCES = private/asm-parser.rkt  \
 	private/registers.rkt  \
 	private/syntax.rkt
 
-all:	vmas
+vmr_SOURCES = vmr.rkt
+runner_SOURCES = private/vm.rkt \
+	private/memory.rkt \
+	private/opcodes.rkt \
+	private/registers.rkt
+
+all:	vmas vmr
 
 vmas:	$(vmas_SOURCES) $(assembler_SOURCES)
 	raco exe $(vmas_SOURCES)
+
+vmr:	$(vmr_SOURCES) $(runner_SOURCES)
+	raco exe $(vmr_SOURCES)
 
 clean:
 	rm -f vmas
