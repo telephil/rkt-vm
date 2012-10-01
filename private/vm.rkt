@@ -9,7 +9,9 @@
 (provide/contract
  [current-vm (-> (parameter/c vm?))]
  [create-vm (integer? . -> . void)]
- [load-file (string? . -> . void)])
+ [load-file (string? . -> . void)]
+ [run (-> void)]
+ [dump-registers (-> void)])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Globals
@@ -45,7 +47,7 @@
 
 (define (flag-set? bit)
   (define flags (vm-flags (current-vm)))
-  (bitwise-bit-set? (flags) (arithmetic-shift 1 bit)))
+  (bitwise-bit-set? (flags) bit))
 
 (define (flag-clear! bit)
   (define flags (vm-flags (current-vm)))
@@ -146,6 +148,7 @@
 ;; Program execution
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (execute op arg1 arg2 mem ip)
+;  (printf "(debug) ~a ~a ~a (ip = ~a)~%" op (if arg1 (arg1) #f) (if arg2 (arg2) #f) (ip))
   (cond
    [(= op NOP)  #;noop ]
    [(= op MOV)  (arg1 (arg2))]
@@ -227,3 +230,15 @@
 ;; Load a compiled program from filename
 (define (load-file filename)
   (with-input-from-file filename read-program))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utils
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (dump-register bc [out (current-output-port)])
+  (define reg (vector-ref (vm-registers (current-vm)) bc))
+  (fprintf out "~a = ~a~%" (bytecode->register bc) (reg)))
+
+(define (dump-registers [out (current-output-port)])
+  (do ((i 0 (add1 i)))
+      ((= i (register-count)))
+    (dump-register i out)))
