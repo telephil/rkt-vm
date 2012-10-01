@@ -29,6 +29,14 @@
 (define (get-vm-register name)
   (vector-ref (vm-registers (current-vm)) (register->bytecode name)))
 
+(define (initialize-registers start)
+  (define ip (get-vm-register 'ip))
+  (define sp (get-vm-register 'sp))
+  (define bp (get-vm-register 'bp))
+  (ip start)
+  (sp (bytes-length (vm-memory (current-vm))))
+  (bp (sp)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Flags management
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -40,6 +48,24 @@
 (define (zf?)
   (define flags (vm-flags (current-vm)))
   (bitwise-bit-set? (flags) 0))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Stack operations
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define (stack-push arg)
+  (define mem (vm-memory (current-vm)))
+  (define sp (get-vm-register 'sp))
+  (define data (integer->integer-bytes arg QWORD #t))
+  (sp (- (sp) QWORD))
+  (bytes-copy! mem (sp) data))
+
+(define (stack-pop)
+  (define mem (vm-memory (current-vm)))
+  (define sp (get-vm-register 'sp))
+  (define data (subbytes mem (sp) (+ (sp) QWORD)))
+  (define val (integer-bytes->integer data #t))
+  (sp (+ (sp) QWORD))
+  val)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Misc Utils
@@ -99,72 +125,46 @@
 ;; Program execution
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (step mem ip)
-  (match-define (list op arg1 arg2) (fetch-insn mem ip))
+  (match-define (list op arg1 arg2)
+		(fetch-insn mem ip))
   (cond
-   ;; NOP
-   [(= op #x00) ]
-   ;; MOV
-   [(= op #x01) (arg1 (arg2))]
-   ;; AND
-   [(= op #x02) (arg1 (bitwise-and (arg1) (arg2)))]
-   ;; OR
-   [(= op #x03) (arg1 (bitwise-ior (arg1) (arg2)))]
-   ;; XOR
-   [(= op #x04) (arg1 (bitwise-xor (arg1) (arg2)))]
-   ;; NOT
-   [(= op #x05) (arg1 (bitwise-not (arg1)))]
-   ;; SHL
-   [(= op #x06) (arg1 (arithmetic-shift (arg1) (arg2)))]
-   ;; SHR
-   [(= op #x07) (arg1 (arithmetic-shift (arg1 (- (arg2)))))]
-   ;; ADD
-   [(= op #x08) (arg1 (+ (arg1) (arg2)))]
-   ;; SUB
-   [(= op #x09) (arg1 (- (arg1) (arg2)))]
-   ;; MUL
-   [(= op #x0A) (arg1 (* (arg1) (arg2)))]
-   ;; DIV
-   [(= op #x0B) (arg1 (/ (arg1) (arg2)))]
-   ;; INC
-   [(= op #x0C) (arg1 (add1 (arg1)))]
-   ;; DEC
-   [(= op #x0D) (arg1 (sub1 (arg1)))
-    (maybe-set-zf arg1)]
-   ;; JMP
-   [(= op #x0E) (ip (arg1))]
-   ;; JZ
-   [(= op #x0F) (when (zf?)
-                  (ip (arg1)))]
-   ;; JNZ
-   [(= op #x10) (unless (zf?)
-		  (ip (arg1)))]
-   ;; JE
-   [(= op #x11) ]
-   ;; JNE
-   [(= op #x12) ]
-   ;; JG
-   [(= op #x13) ]
-   ;; JGE
-   [(= op #x14) ]
-   ;; JL
-   [(= op #x15) ]
-   ;; JLE
-   [(= op #x16) ]
-   ;; PUSH
-   [(= op #x17) ]
-   ;; POP
-   [(= op #x18) ]
-   ;; END
-   [(= op #xff)])
+   [(= op NOP)  #;noop ]
+   [(= op MOV)  (arg1 (arg2))]
+   [(= op AND)  (arg1 (bitwise-and (arg1) (arg2)))]
+   [(= op OR)   (arg1 (bitwise-ior (arg1) (arg2)))]
+   [(= op XOR)  (arg1 (bitwise-xor (arg1) (arg2)))]
+   [(= op NOT)  (arg1 (bitwise-not (arg1)))]
+   [(= op SHL)  (arg1 (arithmetic-shift (arg1) (arg2)))]
+   [(= op SHR)  (arg1 (arithmetic-shift (arg1 (- (arg2)))))]
+   [(= op ADD)  (arg1 (+ (arg1) (arg2)))]
+   [(= op SUB)  (arg1 (- (arg1) (arg2)))]
+   [(= op MUL)  (arg1 (* (arg1) (arg2)))]
+   [(= op DIV)  (arg1 (/ (arg1) (arg2)))]
+   [(= op INC)  (arg1 (add1 (arg1)))]
+   [(= op DEC)  (arg1 (sub1 (arg1))) (maybe-set-zf arg1)]
+   [(= op CMP)  ]
+   [(= op JMP)  (ip (arg1))]
+   [(= op JZ)   (when (zf?) (ip (arg1)))]
+   [(= op JNZ)  (unless (zf?) (ip (arg1)))]
+   [(= op JE)   (when (zf?) (ip (arg1)))]
+   [(= op JNE)  (unless (zf?) (ip (arg1)))]
+   [(= op JG) ]
+   [(= op JGE) ]
+   [(= op JL) ]
+   [(= op JLE) ]
+   [(= op PUSH) (stack-push arg1)]
+   [(= op POP)  (stack-pop arg1)]
+   [(= op CALL) (stack-push (ip)) (ip (arg1))]
+   [(= op RET)  (ip (stack-pop))]
+   [(= op END)  #;noop ])
   op)
 
 (define (run)
   (define ip (get-vm-register 'ip))
   (define mem (vm-memory (current-vm)))
-
   (letrec ([iter (lambda ()
 		   (define result (step mem ip))
-		   (unless (= result #xFF)
+		   (unless (= result END)
 		     (iter)))])
     (iter)))
   
@@ -184,7 +184,7 @@
 (define (read-loop loop mem idx)
   (define b (read-byte))
   (cond
-   [(eof-object? b) (store-byte mem idx #xff)]
+   [(eof-object? b) (store-byte mem idx END)]
    [else
     (store-byte mem idx b)
     (loop loop mem (add1 idx))]))
@@ -193,7 +193,8 @@
   (define mem (vm-memory (current-vm)))
   (define header (read-and-check-header))
   (define start (read-start-label-address))
-  (letrec ([loop read-loop]) (loop loop mem 0)))
+  (letrec ([loop read-loop]) (loop loop mem 0))
+  (initialize-registers start))
 
 ;; Load a compiled program from filename
 (define (load-file filename)
