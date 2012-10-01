@@ -124,9 +124,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Program execution
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define (step mem ip)
-  (match-define (list op arg1 arg2)
-		(fetch-insn mem ip))
+(define (execute op arg1 arg2 mem ip)
   (cond
    [(= op NOP)  #;noop ]
    [(= op MOV)  (arg1 (arg2))]
@@ -152,11 +150,16 @@
    [(= op JGE) ]
    [(= op JL) ]
    [(= op JLE) ]
-   [(= op PUSH) (stack-push arg1)]
-   [(= op POP)  (stack-pop arg1)]
+   [(= op PUSH) (stack-push (arg1))]
+   [(= op POP)  (arg1 (stack-pop))]
    [(= op CALL) (stack-push (ip)) (ip (arg1))]
    [(= op RET)  (ip (stack-pop))]
-   [(= op END)  #;noop ])
+   [(= op END)  #;noop ]))
+
+(define (step mem ip)
+  (match-define (list op arg1 arg2)
+		(fetch-insn mem ip))
+  (execute op arg1 arg2 mem ip)
   op)
 
 (define (run)

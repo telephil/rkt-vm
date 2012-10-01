@@ -1,6 +1,8 @@
 2012-10-01  Philippe Mechaï  <philippe.mechai@gmail.com>
 
 	* private/vm.rkt (step): Added implementation of PUSH and POP. Implemented CALL and RET
+	(execute): Moved opcode execution in a separate function and fixed PUSH and POP calls
+
 	* private/opcodes.rkt: Added constants for opcodes
 
 2012-10-01  Philippe Mechaï  <philippe.mechai@gmail.com>
