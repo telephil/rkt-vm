@@ -7,11 +7,15 @@
 (struct vm (memory registers flags))
 
 (provide/contract
- [current-vm (-> (parameter/c vm?))]
+ [vm? (any/c . -> . boolean?)]
+ [current-vm (parameter/c vm?)]
  [create-vm (integer? . -> . void)]
  [load-file (string? . -> . void)]
  [run (-> void)]
+ [step (bytes? (parameter/c integer?) . -> . void)]
  [dump-registers (-> void)])
+
+(provide vm-memory get-vm-register)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Globals
