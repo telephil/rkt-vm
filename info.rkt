@@ -11,4 +11,4 @@
 ;; (define version "0.0.1")
 
 (define vm-author "Philippe Mechaï")
-(define vm-version "0.0.1")
+(define vm-version "0.1")
