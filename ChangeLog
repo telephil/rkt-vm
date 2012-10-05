@@ -1,3 +1,7 @@
+2012-10-05  Philippe Mechaï  <philippe.mechai@gmail.com>
+
+	* vmdb.rkt: Initial debugger implementation
+
 2012-10-02  Philippe Mechaï  <philippe.mechai@gmail.com>
 
 	* private/vm.rkt (flag-set?): Fix bug introduced in refactoring (bit parameter was erroenously shifted !!!)

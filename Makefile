@@ -14,13 +14,18 @@ runner_SOURCES = private/vm.rkt \
 	private/opcodes.rkt \
 	private/registers.rkt
 
-all:	vmas vmr
+vmdb_SOURCES = vmdb.rkt
+
+all:	vmas vmr vmdb
 
 vmas:	$(vmas_SOURCES) $(assembler_SOURCES)
 	raco exe $(vmas_SOURCES)
 
 vmr:	$(vmr_SOURCES) $(runner_SOURCES)
 	raco exe $(vmr_SOURCES)
+
+vmdb:	$(vmdb_SOURCES) $(runner_SOURCES)
+	raco exe $(vmdb_SOURCES)
 
 clean:
 	rm -f vmas
