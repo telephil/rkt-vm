@@ -5,7 +5,7 @@ rkt-vm is a simple Virtual Machine built using Racket (a Scheme variant).
 It provides:
 - an assembly to bytecode compiler, 
 - a virtual machine able to load and execute bytecode,
-- a debugger (not yet)
+- a debugger (an initial implementation exists but still lacks breakpoints)
 
 All of the code is developed using racket (only v5.3 has been tested).
 
