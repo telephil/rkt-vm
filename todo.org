@@ -30,20 +30,34 @@ This file is used to keep track of bugs, improvements and general roadmap
 
 * Roadmap
 
-** TODO Binary execution [25%]
+** TODO Binary execution [60%]
 *** DONE Load program in memory
 *** TODO Unload program from memory
     - Note taken on [2012-09-30 dim. 15:57] \\
       Should the whole memory be reset or do we consider that another program might also be loaded ?
-*** TODO Instruction execution
+*** DONE Instruction execution
     - Note taken on [2012-09-30 dim. 22:59] \\
       Partly implemented
-*** TODO Stack definition and implemetation [0%]
-**** TODO Definition
-**** TODO Implementation
+*** DONE Stack definition and implemetation [100%]
+**** DONE Definition
+**** DONE Implementation
+*** TODO End of program indication
+    - Note taken on [2012-10-05 ven. 20:12] \\
+      Would be useful with (step) instruction
 
-** TODO Debugger [0%]
-*** TODO Create CLI parser
-*** TODO Implement special debugging commands [0%]
+** Assembly language
+*** TODO Add ability to pass immediate values to instructions (e.g. PUSH 42)
+*** TODO Add pointer semantic for registers (e.g. -8(bp))
+
+** TODO Disassembler
+   - Note taken on [2012-10-03 mer. 21:34] \\
+     Only from a program loaded in memory in order to use from the debugger or even from a bytecode file ?
+
+** TODO Debugger [50%]
+*** DONE Create CLI parser
+*** TODO Implement special debugging commands [60%]
+**** DONE Load program
+**** DONE Run program
+**** DONE Step
 **** TODO Registers inspection
 **** TODO Memory inspection
