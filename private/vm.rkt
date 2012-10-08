@@ -153,40 +153,40 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (execute op arg1 arg2 mem ip)
 ;  (printf "(debug) ~a ~a ~a (ip = ~a)~%" op (if arg1 (arg1) #f) (if arg2 (arg2) #f) (ip))
-  (cond
-   [(= op NOP)  #;noop ]
-   [(= op MOV)  (arg1 (arg2))]
-   [(= op AND)  (arg1 (bitwise-and (arg1) (arg2)))]
-   [(= op OR)   (arg1 (bitwise-ior (arg1) (arg2)))]
-   [(= op XOR)  (arg1 (bitwise-xor (arg1) (arg2)))]
-   [(= op NOT)  (arg1 (bitwise-not (arg1)))]
-   [(= op SHL)  (arg1 (arithmetic-shift (arg1) (arg2)))]
-   [(= op SHR)  (arg1 (arithmetic-shift (arg1 (- (arg2)))))]
-   [(= op ADD)  (arg1 (+ (arg1) (arg2)))]
-   [(= op SUB)  (arg1 (- (arg1) (arg2)))]
-   [(= op MUL)  (arg1 (* (arg1) (arg2)))]
-   [(= op DIV)  (arg1 (/ (arg1) (arg2)))]
-   [(= op INC)  (arg1 (add1 (arg1)))]
-   [(= op DEC)  (arg1 (sub1 (arg1))) (zf! arg1)]
-   [(= op CMP)  (let ([res (make-parameter (- (arg1) (arg2)))])
-		  (zf! res)
-		  (sf! res))]
-   [(= op JMP)  (ip (arg1))]
-   [(= op JZ)   (when (zf?)   (ip (arg1)))]
-   [(= op JNZ)  (unless (zf?) (ip (arg1)))]
-   [(= op JE)   (when (zf?)   (ip (arg1)))]
-   [(= op JNE)  (unless (zf?) (ip (arg1)))]
-   [(= op JG)   (unless (sf?) (ip (arg1)))]
-   [(= op JGE)  (when (or (zf?) (not (sf?)))
-		  (ip (arg1)))]
-   [(= op JL)   (when (sf?) (ip (arg1)))]
-   [(= op JLE)  (when (or (zf?) (sf?))
-		  (ip (arg1)))]
-   [(= op PUSH) (stack-push (arg1))]
-   [(= op POP)  (arg1 (stack-pop))]
-   [(= op CALL) (stack-push (ip)) (ip (arg1))]
-   [(= op RET)  (ip (stack-pop))]
-   [(= op END)  #;noop ]))
+  (case op
+   [(NOP)  (values)]
+   [(MOV)  (arg1 (arg2))]
+   [(AND)  (arg1 (bitwise-and (arg1) (arg2)))]
+   [(OR)   (arg1 (bitwise-ior (arg1) (arg2)))]
+   [(XOR)  (arg1 (bitwise-xor (arg1) (arg2)))]
+   [(NOT)  (arg1 (bitwise-not (arg1)))]
+   [(SHL)  (arg1 (arithmetic-shift (arg1) (arg2)))]
+   [(SHR)  (arg1 (arithmetic-shift (arg1 (- (arg2)))))]
+   [(ADD)  (arg1 (+ (arg1) (arg2)))]
+   [(SUB)  (arg1 (- (arg1) (arg2)))]
+   [(MUL)  (arg1 (* (arg1) (arg2)))]
+   [(DIV)  (arg1 (/ (arg1) (arg2)))]
+   [(INC)  (arg1 (add1 (arg1)))]
+   [(DEC)  (arg1 (sub1 (arg1))) (zf! arg1)]
+   [(CMP)  (let ([res (make-parameter (- (arg1) (arg2)))])
+     	  (zf! res)
+     	  (sf! res))]
+   [(JMP)  (ip (arg1))]
+   [(JZ)   (when (zf?)   (ip (arg1)))]
+   [(JNZ)  (unless (zf?) (ip (arg1)))]
+   [(JE)   (when (zf?)   (ip (arg1)))]
+   [(JNE)  (unless (zf?) (ip (arg1)))]
+   [(JG)   (unless (sf?) (ip (arg1)))]
+   [(JGE)  (when (or (zf?) (not (sf?)))
+     	  (ip (arg1)))]
+   [(JL)   (when (sf?) (ip (arg1)))]
+   [(JLE)  (when (or (zf?) (sf?))
+     	  (ip (arg1)))]
+   [(PUSH) (stack-push (arg1))]
+   [(POP)  (arg1 (stack-pop))]
+   [(CALL) (stack-push (ip)) (ip (arg1))]
+   [(RET)  (ip (stack-pop))]
+   [(END)  (values)]))
 
 (define (step mem ip)
   (match-define (list op arg1 arg2)
