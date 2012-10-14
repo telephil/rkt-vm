@@ -1,6 +1,7 @@
 #lang racket
 
-(require "memory.rkt"
+(require "bits.rkt"
+	 "memory.rkt"
 	 "registers.rkt"
 	 "opcodes.rkt")
 
@@ -93,22 +94,6 @@
   (define val (integer-bytes->integer data #t))
   (sp (+ (sp) QWORD))
   val)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Misc Utils
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define (untag n bit)
-  (if (bitwise-bit-set? n bit)
-   (bitwise-and n (bitwise-not (arithmetic-shift 1 bit)))
-   n))
-
-;; TODO ugly!!!
-(define (clear-tags op)
-  (set! op (untag op 15))
-  (set! op (untag op 14))
-  (set! op (untag op 13))
-  (set! op (untag op 12))
-  op)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Memory access
