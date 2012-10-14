@@ -3,6 +3,7 @@
 (provide/contract
  [opcode->bytecode (symbol? . -> . (or/c integer? #f))]
  [opcode-argcount (symbol? . -> . (or/c integer? #f))]
+ [opcode->string (integer? . -> . (or/c string? #f))]
  (NOP  integer?)
  (MOV  integer?)
  (AND  integer?)
@@ -44,6 +45,10 @@
 (define (opcode-argcount op)
   (define res (hash-ref opcode-by-symbol op #f))
   (or (and res (opcode-argc res))))
+
+(define (opcode->string bc)
+  (define res (hash-ref opcode-by-bytecode bc #f))
+  (or (and res (symbol->string (opcode-symbol res)))))
 
 (struct opcode (symbol bytecode argc))
 
