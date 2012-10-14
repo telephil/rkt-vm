@@ -14,7 +14,8 @@
  [load-file (string? . -> . void)]
  [run (-> void)]
  [step (bytes? (parameter/c integer?) . -> . void)]
- [dump-registers (-> void)])
+ [print-registers (integer? . -> . void)]
+ [print-register (integer? integer? . -> . void)])
 
 (provide vm-memory get-vm-register)
 
@@ -223,11 +224,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utils
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define (dump-register bc [out (current-output-port)])
+(define (print-register bc radix [out (current-output-port)])
   (define reg (vector-ref (vm-registers (current-vm)) bc))
-  (fprintf out "~a = ~a~%" (bytecode->register bc) (reg)))
+  (fprintf out "~a = ~a~%" (bytecode->register bc) (number->string (reg) radix)))
 
-(define (dump-registers [out (current-output-port)])
+(define (print-registers radix [out (current-output-port)])
   (do ((i 0 (add1 i)))
       ((= i (register-count)))
-    (dump-register i out)))
+    (print-register i radix out)))

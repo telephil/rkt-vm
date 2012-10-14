@@ -1,5 +1,11 @@
 2012-10-14  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* vmdb.rkt (do-print): rename calls from dump-reg... to print-reg... and pass new radix argument
+
+	* private/vm.rkt (print-register): added a radix argument to print register values in different radixes (used by vmdb)
+
+	* private/registers.rkt (register->bytecode): return false if no register matching given symbol could be found
+
 	* vmdb.rkt (cmd-disasm): implementation of disasm command
 
 	* private/disassembler.rkt (disassemble): now return #f at end of program.

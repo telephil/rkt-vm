@@ -4,6 +4,7 @@
 (require "info.rkt"
 	 "private/vm.rkt"
 	 "private/disassembler.rkt"
+	 "private/registers.rkt"
 	 readline/readline)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -76,13 +77,31 @@
 		     (loop)))])
     (loop)))
 
+(define (do-print fn target [radix 10])
+  (cond
+   [(or (string=? target "registers")
+	(string=? target "regs"))
+    (print-registers radix)]
+   [else
+    (define bc (register->bytecode (string->symbol target)))
+    (if bc
+	(print-register bc radix)
+	(raise-user-error (format "~a: unknown register ~a~%" fn target)))]))
+
 (define (cmd-print args)
   (unless (= 1 (length args))
     (raise-user-error (format "print: invalid arguments ~a~%" args)))
-  (define target (first args))
-  (if (string=? (first args) "registers")
-      (dump-registers)
-      #f))
+  (do-print "print" (first args)))
+
+(define (cmd-print/x args)
+  (unless (= 1 (length args))
+    (raise-user-error (format "print/x: invalid arguments ~a~%" args)))
+  (do-print "print/x" (first args) 16))
+
+(define (cmd-print/b args)
+  (unless (= 1 (length args))
+    (raise-user-error (format "print/b: invalid arguments ~a~%" args)))
+  (do-print "print/b" (first args) 2))
 
 (define (cmd-help args)
   (displayln "Available commands:")
@@ -92,6 +111,8 @@
   (displayln "  step: Run next instruction")
   (displayln "  disasm: Disassemble loaded program")
   (displayln "  print <parameter>: ")
+  (displayln "  print/x <parameter>: ")
+  (displayln "  print/b <parameter>: ")
   (displayln "    Where parameter is one of the following:")
   (displayln "      <register> : print the value of given register")
   (displayln "      registers  : print all registers")
@@ -108,13 +129,15 @@
 (define command-handlers
   (make-hash
    (list
-    (cons "quit"  cmd-quit)
-    (cons "help"  cmd-help)
-    (cons "load"  cmd-load)
-    (cons "run"   cmd-run)
-    (cons "step"  cmd-step)
-    (cons "disasm" cmd-disasm)
-    (cons "print" cmd-print))))
+    (cons "quit"    cmd-quit)
+    (cons "help"    cmd-help)
+    (cons "load"    cmd-load)
+    (cons "run"     cmd-run)
+    (cons "step"    cmd-step)
+    (cons "disasm"  cmd-disasm)
+    (cons "print"   cmd-print)
+    (cons "print/x" cmd-print/x)
+    (cons "print/b" cmd-print/b))))
 
 (define (handle-line line)
   (match-define (list-rest cmd args) (string-split line " "))
