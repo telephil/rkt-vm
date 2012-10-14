@@ -3,6 +3,7 @@
 
 (require "info.rkt"
 	 "private/vm.rkt"
+	 "private/disassembler.rkt"
 	 readline/readline)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -27,9 +28,16 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; command handlers
+;; global vars
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define program-loaded (make-parameter #f))
+(define start 0)
+(define mem   #f)
+(define ip    #f)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; command handlers
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (define (cmd-load args)
   (unless (= 1 (length args))
@@ -38,6 +46,9 @@
   (unless (file-exists? filename)
     (raise-user-error (format "load: could not find file ~a~%" filename)))
   (load-file filename)
+  (set! ip (get-vm-register 'ip))
+  (set! start (ip))
+  (set! mem (vm-memory (current-vm)))
   (program-loaded #t))
 
 (define (cmd-run args)
@@ -52,9 +63,18 @@
     (raise-user-error "No program loaded"))
   (unless (null? args)
     (raise-user-error (format "step: invalid arguments ~a~%" args)))
-  (define mem (vm-memory (current-vm)))
-  (define ip (get-vm-register 'ip))
   (step mem ip))
+
+(define (cmd-disasm args)
+  (unless (program-loaded) (raise-user-error "No program loaded"))
+  (unless (null? args) (raise-user-error (format "disasm: invalid arguments ~a~%" args)))
+  (define ptr (make-parameter 0))
+  (letrec ([loop (lambda ()
+		   (define line (disassemble start mem ptr))
+		   (when line
+		     (displayln line)
+		     (loop)))])
+    (loop)))
 
 (define (cmd-print args)
   (unless (= 1 (length args))
@@ -70,6 +90,7 @@
   (displayln "  load <filename>: Load given bytecode file in memory")
   (displayln "  run: Run loaded program")
   (displayln "  step: Run next instruction")
+  (displayln "  disasm: Disassemble loaded program")
   (displayln "  print <parameter>: ")
   (displayln "    Where parameter is one of the following:")
   (displayln "      <register> : print the value of given register")
@@ -92,6 +113,7 @@
     (cons "load"  cmd-load)
     (cons "run"   cmd-run)
     (cons "step"  cmd-step)
+    (cons "disasm" cmd-disasm)
     (cons "print" cmd-print))))
 
 (define (handle-line line)
@@ -111,6 +133,7 @@
 
 (define (cli)
   (letrec ([loop (lambda () 
+		   (displayln "")
 		   (read-one-line)
 		   (loop))])
     (loop)))
@@ -134,7 +157,6 @@
    [("-s" "--memsize") size "Memory size (in bytes)"
     (memsize (string->number size))])
   (show-version)
-  (displayln "")
   (load-history)
   (create-vm (memsize))
   (cli)

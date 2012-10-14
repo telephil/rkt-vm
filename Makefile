@@ -24,7 +24,7 @@ vmas:	$(vmas_SOURCES) $(assembler_SOURCES)
 vmr:	$(vmr_SOURCES) $(runner_SOURCES)
 	raco exe $(vmr_SOURCES)
 
-vmdb:	$(vmdb_SOURCES) $(runner_SOURCES)
+vmdb:	$(vmdb_SOURCES) $(runner_SOURCES) private/disassembler.rkt
 	raco exe $(vmdb_SOURCES)
 
 clean:

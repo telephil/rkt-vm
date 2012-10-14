@@ -11,7 +11,7 @@
 ;; Contract
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (provide/contract
- [disassemble (bytes? parameter/c . -> . string?)])
+ [disassemble (integer? bytes? parameter/c . -> . (or/c string? #f))])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; String conversion
@@ -65,20 +65,25 @@
   (define op (fetch-op mem ptr))
   (define arg1 (fetch-arg op 15 mem ptr))
   (define arg2 (fetch-arg op 13 mem ptr))
-  (list (op->string (clear-tags op))
+  (list (clear-tags op)
 	arg1
 	arg2))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Disassemble
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define (disassemble mem ptr)
-  (define addr (addr->string (ptr)))
+(define (disassemble start mem ptr)
+  (define addr (ptr))
   (match-define (list op arg1 arg2)
 		(fetch-insn mem ptr))
-  (define res (string-append addr ": " op " "))
-  (when arg1
-    (set! res (string-append res arg1)))
-  (when arg2
-    (set! res (string-append res ", " arg2)))
-  res)
+  (if (= op END) #f
+      (let ([res (string-append (if (= addr start) "* " "  ")
+				(addr->string addr)
+				": "
+				(op->string op)
+				" ")])
+	(when arg1
+	  (set! res (string-append res arg1)))
+	(when arg2
+	  (set! res (string-append res ", " arg2)))
+	res)))

@@ -1,5 +1,9 @@
 2012-10-14  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* vmdb.rkt (cmd-disasm): implementation of disasm command
+
+	* private/disassembler.rkt (disassemble): now return #f at end of program.
+
 	* private/vm.rkt (execute): fixed use of case which lead to a serious regression
 
 	* private/opcodes.rkt: added an opcode->symbol function that convert bytecode to an instruction symbol
