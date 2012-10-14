@@ -8,7 +8,7 @@
 (struct register (name opcode))
 
 (define (register->bytecode register)
-  (hash-ref registers-by-symbol register))
+  (hash-ref registers-by-symbol register #f))
 
 (define (bytecode->register bc)
   (register-name (vector-ref registers bc)))
