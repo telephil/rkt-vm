@@ -1,3 +1,17 @@
+2012-10-14  Philippe Mechaï  <philippe.mechai@gmail.com>
+
+	* private/vm.rkt (execute): fixed use of case which lead to a serious regression
+
+	* private/opcodes.rkt: added an opcode->symbol function that convert bytecode to an instruction symbol
+
+	* private/disassembler.rkt: bytecode disassembler
+
+	* private/opcodes.rkt (opcode->string): new function that convert a bytecode encoded opcode to its string representation (i.e. instruction name)
+
+	* private/vm.rkt: removed untag and clear-tags functions 
+
+	* private/bits.rkt: bit related utilities (extracted from vm.rkt)
+
 2012-10-05  Philippe Mechaï  <philippe.mechai@gmail.com>
 
 	* vmdb.rkt: Initial debugger implementation

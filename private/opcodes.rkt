@@ -4,6 +4,7 @@
  [opcode->bytecode (symbol? . -> . (or/c integer? #f))]
  [opcode-argcount (symbol? . -> . (or/c integer? #f))]
  [opcode->string (integer? . -> . (or/c string? #f))]
+ [opcode->symbol (integer? . -> . (or/c symbol? #f))]
  (NOP  integer?)
  (MOV  integer?)
  (AND  integer?)
@@ -45,6 +46,10 @@
 (define (opcode-argcount op)
   (define res (hash-ref opcode-by-symbol op #f))
   (or (and res (opcode-argc res))))
+
+(define (opcode->symbol bc)
+  (define res (hash-ref opcode-by-bytecode bc #f))
+  (or (and res (opcode-symbol res))))
 
 (define (opcode->string bc)
   (define res (hash-ref opcode-by-bytecode bc #f))
