@@ -31,7 +31,7 @@
   (load-file filename)
   (run)
   (when (dumpregs?)
-    (dump-registers))
+    (print-registers))
   (values))
 
 ;; Execute main
