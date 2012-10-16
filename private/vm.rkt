@@ -23,6 +23,10 @@
 ;; Globals
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define current-vm (make-parameter null))
+(define ip #f)
+(define bp #f)
+(define sp #f)
+(define flags #f)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; VM Definition & Utils
@@ -38,9 +42,10 @@
   (vector-ref (vm-registers (current-vm)) (register->bytecode name)))
 
 (define (initialize-registers start)
-  (define ip (get-vm-register 'ip))
-  (define sp (get-vm-register 'sp))
-  (define bp (get-vm-register 'bp))
+  (set! ip (get-vm-register 'ip))
+  (set! sp (get-vm-register 'sp))
+  (set! bp (get-vm-register 'bp))
+  (set! flags (vm-flags (current-vm)))
   (ip start)
   (sp (bytes-length (vm-memory (current-vm))))
   (bp (sp)))
@@ -56,12 +61,10 @@
   (bitwise-bit-set? (flags) bit))
 
 (define (flag-clear! bit)
-  (define flags (vm-flags (current-vm)))
   (when (flag-set? bit)
     (flags (bitwise-and (flags) (bitwise-not (arithmetic-shift 1 bit))))))
 
 (define (flag-set! bit predicate arg)
-  (define flags (vm-flags (current-vm)))
   (if (predicate (arg))
       (flags (bitwise-ior (flags) (arithmetic-shift 1 bit)))
       (flag-clear! bit)))
@@ -181,7 +184,6 @@
   op)
 
 (define (run)
-  (define ip (get-vm-register 'ip))
   (define mem (vm-memory (current-vm)))
   (letrec ([iter (lambda ()
 		   (define result (step mem ip))
@@ -228,7 +230,7 @@
   (define reg (vector-ref (vm-registers (current-vm)) bc))
   (fprintf out "~a = ~a~%" (bytecode->register bc) (number->string (reg) radix)))
 
-(define (print-registers radix [out (current-output-port)])
+(define (print-registers [radix 10] [out (current-output-port)])
   (do ((i 0 (add1 i)))
       ((= i (register-count)))
     (print-register i radix out)))

@@ -1,3 +1,10 @@
+2012-10-16  Philippe Mechaï  <philippe.mechai@gmail.com>
+
+	* private/vm.rkt (print-registers): Make radix argument default to
+	10.
+	Make most used registers available as global variables to reduce
+	number of lookups.
+
 2012-10-14  Philippe Mechaï  <philippe.mechai@gmail.com>
 
 	* vmdb.rkt (do-print): rename calls from dump-reg... to print-reg... and pass new radix argument
