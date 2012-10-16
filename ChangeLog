@@ -11,25 +11,33 @@
 
 2012-10-14  Philippe Mechaï  <philippe.mechai@gmail.com>
 
-	* vmdb.rkt (do-print): rename calls from dump-reg... to print-reg... and pass new radix argument
+	* vmdb.rkt (do-print): rename calls from dump-reg... to
+	print-reg...and pass new radix argument
 
-	* private/vm.rkt (print-register): added a radix argument to print register values in different radixes (used by vmdb)
+	* private/vm.rkt (print-register): added a radix argument to print
+	register values in different radixes (used by vmdb)
 
-	* private/registers.rkt (register->bytecode): return false if no register matching given symbol could be found
+	* private/registers.rkt (register->bytecode): return false if no
+	register matching given symbol could be found
 
 	* vmdb.rkt (cmd-disasm): implementation of disasm command
 
-	* private/disassembler.rkt (disassemble): now return #f at end of program.
+	* private/disassembler.rkt (disassemble): now return #f at end of
+	program.
 
-	* private/vm.rkt (execute): fixed use of case which lead to a serious regression
+	* private/vm.rkt (execute): fixed use of case which lead to a
+	serious regression
 
-	* private/opcodes.rkt: added an opcode->symbol function that convert bytecode to an instruction symbol
+	* private/opcodes.rkt: added an opcode->symbol function that
+	convert bytecode to an instruction symbol
 
 	* private/disassembler.rkt: bytecode disassembler
 
-	* private/opcodes.rkt (opcode->string): new function that convert a bytecode encoded opcode to its string representation (i.e. instruction name)
+	* private/opcodes.rkt (opcode->string): new function that convert
+	a bytecode encoded opcode to its string representation (i.e.
+	instruction name)
 
-	* private/vm.rkt: removed untag and clear-tags functions 
+	* private/vm.rkt: removed untag and clear-tags functions
 
 	* private/bits.rkt: bit related utilities (extracted from vm.rkt)
 
@@ -39,47 +47,61 @@
 
 2012-10-02  Philippe Mechaï  <philippe.mechai@gmail.com>
 
-	* private/vm.rkt (flag-set?): Fix bug introduced in refactoring (bit parameter was erroenously shifted !!!)
-	(dump-registers): New function that dump registers to (current-output-port)
+	* private/vm.rkt (flag-set?): Fix bug introduced in
+	refactoring (bit parameter was erroenously shifted !!!)
+	(dump-registers): New function that dump registers
+	to (current-output-port)
 
 2012-10-01  Philippe Mechaï  <philippe.mechai@gmail.com>
 
-	* private/vm.rkt (step): Added implementation of PUSH and POP. Implemented CALL and RET
-	(execute): Moved opcode execution in a separate function and fixed PUSH and POP calls
+	* private/vm.rkt (step): Added implementation of PUSH and POP.
+	Implemented CALL and RET
+	(execute): Moved opcode execution in a separate function and fixed
+	PUSH and POP calls
 	Implemented missing opcodes (namely CMP and dependent jumps)
 
 	* private/opcodes.rkt: Added constants for opcodes
 
 2012-10-01  Philippe Mechaï  <philippe.mechai@gmail.com>
 
-	* private/vm.rkt (initialize-registers): Initialize IP, SP and BP after a program has been loaded
+	* private/vm.rkt (initialize-registers): Initialize IP, SP and BP
+	after a program has been loaded
 
 2012-09-30  Philippe Mechaï  <philippe.mechai@gmail.com>
 
 	* private/vm.rkt (run): Initial implementation
 
-	* private/opcodes.rkt (opcodes): fix argument count of SHL and SHR opcodes
+	* private/opcodes.rkt (opcodes): fix argument count of SHL and SHR
+	opcodes
 
-	* vmas.rkt (main): add forgotten call to (write-bytes) on (compile-file) output
+	* vmas.rkt (main): add forgotten call to (write-bytes)
+	on (compile-file) output
 
 	* private/assembler.rkt
-	(compute-label-addresses): now call a function that compute instruction list lines offsets to fix a bug in label to address translation.
-	(compute-offsets): New function that compute offset of lines in instruction list
+	(compute-label-addresses): now call a function that compute
+	instruction list lines offsets to fix a bug in label to address
+	translation.
+	(compute-offsets): New function that compute offset of lines in
+	instruction list
 	(encode): Do not encode labels as nop instructions anymore
-	(encode-insn): When encoding opcode the tag was not applied to the written opcode
+	(encode-insn): When encoding opcode the tag was not applied to the
+	written opcode
 
 2012-09-26  Philippe Mechaï  <philippe.mechai@gmail.com>
 
-	* private/assembler.rkt (encode-arg): reflect label syntax change in asm-parser
+	* private/assembler.rkt (encode-arg): reflect label syntax change
+	in asm-parser
 	(integer->s16bytes, integer->s64bytes): fix bug in encoding
 
-	* private/asm-parser.rkt (asm-parser): make label references syntax return a string instead of a symbol
+	* private/asm-parser.rkt (asm-parser): make label references
+	syntax return a string instead of a symbol
 
 	* compiler.rkt: Complete implementation of the compiler
 
 2012-09-25  Philippe Mechaï  <philippe.mechai@gmail.com>
 
-	* parser.rkt: improved parsing (still a bug when there is no newline at end of file)
+	* parser.rkt: improved parsing (still a bug when there is no
+	newline at end of file)
 
 2012-09-24  Philippe Mechaï  <philippe.mechai@gmail.com>
 
