@@ -27,7 +27,6 @@ This file is used to keep track of bugs, improvements and general roadmap
 *** TODO Assembler errors
 *** TODO Loader errors
 
-
 * Roadmap
 
 ** TODO Binary execution [60%]
@@ -49,15 +48,17 @@ This file is used to keep track of bugs, improvements and general roadmap
 *** TODO Add ability to pass immediate values to instructions (e.g. PUSH 42)
 *** TODO Add pointer semantic for registers (e.g. -8(bp))
 
-** TODO Disassembler
+** DONE Disassembler
    - Note taken on [2012-10-03 mer. 21:34] \\
      Only from a program loaded in memory in order to use from the debugger or even from a bytecode file ?
 
 ** TODO Debugger [50%]
 *** DONE Create CLI parser
-*** TODO Implement special debugging commands [60%]
+*** TODO Implement special debugging commands [85%]
 **** DONE Load program
 **** DONE Run program
 **** DONE Step
-**** TODO Registers inspection
+**** DONE Disassemble
+**** DONE Breakpoints
+**** DONE Registers inspection
 **** TODO Memory inspection
