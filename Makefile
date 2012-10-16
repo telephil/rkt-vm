@@ -1,31 +1,22 @@
 # Build VM command line tools
+EXE := vmas vmr vmdb
+DEP := $(EXE:=.deps)
 
-vmas_SOURCES = vmas.rkt
-assembler_SOURCES = private/asm-parser.rkt  \
-	private/assembler.rkt  \
-	private/memory.rkt  \
-	private/opcodes.rkt  \
-	private/registers.rkt  \
-	private/syntax.rkt
-
-vmr_SOURCES = vmr.rkt
-runner_SOURCES = private/vm.rkt \
-	private/memory.rkt \
-	private/opcodes.rkt \
-	private/registers.rkt
-
-vmdb_SOURCES = vmdb.rkt
-
-all:	vmas vmr vmdb
-
-vmas:	$(vmas_SOURCES) $(assembler_SOURCES)
-	raco exe $(vmas_SOURCES)
-
-vmr:	$(vmr_SOURCES) $(runner_SOURCES)
-	raco exe $(vmr_SOURCES)
-
-vmdb:	$(vmdb_SOURCES) $(runner_SOURCES) private/disassembler.rkt
-	raco exe $(vmdb_SOURCES)
-
+all: $(EXE)
+deps: $(DEP)
 clean:
-	rm -f vmas
+	$(RM) $(EXE) $(DEP)
+
+-include $(DEP)
+
+%: %.rkt
+	raco exe -o $@ $<
+
+%.deps: %.rkt
+	raco make $<
+	(echo -n $(@:.deps=)": "; \
+	 tr ' ' '\n' < compiled/$(@:.deps=)_rkt.dep | grep rkt-vm | sed -e "s|#\"$$PWD/||" -e 's|"||' | tr '\n' ' '; \
+	 echo "") >> $@
+	rm -Rf compiled
+
+.PHONY: all clean deps
