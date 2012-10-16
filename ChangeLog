@@ -1,5 +1,9 @@
 2012-10-16  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* vmdb.rkt (command-handlers): Added new commands for breakpoints
+	(cmd-break): Initial implementation of breakpoints
+	(continue): Like vm::run but with breakpoint awareness
+
 	* private/vm.rkt (print-registers): Make radix argument default to
 	10.
 	Make most used registers available as global variables to reduce

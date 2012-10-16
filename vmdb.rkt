@@ -5,6 +5,7 @@
 	 "private/vm.rkt"
 	 "private/disassembler.rkt"
 	 "private/registers.rkt"
+	 "private/opcodes.rkt"
 	 readline/readline)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -37,6 +38,37 @@
 (define ip    #f)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; debugger
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define breakpoints (make-hash))
+
+(define (add-breakpoint addr)
+  (hash-set! breakpoints addr #t))
+
+(define (remove-breakpoint addr)
+  (hash-remove! breakpoints addr))
+
+(define (enable-breakpoint addr)
+  (add-breakpoint addr))
+
+(define (disable-breakpoint addr)
+  (hash-set! breakpoints addr #f))
+
+(define (breakpoint-at? addr)
+  (hash-ref breakpoints addr #f))
+
+(define (continue)
+  (define mem (vm-memory (current-vm)))
+  (letrec ([iter (lambda ()
+		   (define result (step mem ip))
+		   (define break? (breakpoint-at? (ip)))
+		   (when break?
+		     (printf "Breakpoint reached at 0x~a~%" (number->string (ip) 16)))
+		   (unless (or break? (= result END))
+		     (iter)))])
+    (iter)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; command handlers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -53,11 +85,9 @@
   (program-loaded #t))
 
 (define (cmd-run args)
-  (unless (program-loaded)
-    (raise-user-error "No program loaded"))
-  (unless (null? args)
-    (raise-user-error (format "run: invalid arguments ~a~%" args)))
-  (run))
+  (unless (program-loaded) (raise-user-error "No program loaded"))
+  (unless (null? args)     (raise-user-error (format "run: invalid arguments ~a~%" args)))
+  (continue))
 
 (define (cmd-step args)
   (unless (program-loaded)
@@ -76,6 +106,10 @@
 		     (displayln line)
 		     (loop)))])
     (loop)))
+
+(define (cmd-break args)
+  (when (null? args) (raise-user-error (format "break: missing address argument~%")))
+  (add-breakpoint (string->number (first args) 16)))
 
 (define (do-print fn target [radix 10])
   (cond
@@ -108,7 +142,9 @@
   (displayln "-------------------")
   (displayln "  load <filename>: Load given bytecode file in memory")
   (displayln "  run: Run loaded program")
+  (displayln "  cont: Continue program execution")
   (displayln "  step: Run next instruction")
+  (displayln "  break <address>: add a breakpoint at given address")
   (displayln "  disasm: Disassemble loaded program")
   (displayln "  print <parameter>: ")
   (displayln "  print/x <parameter>: ")
@@ -133,8 +169,10 @@
     (cons "help"    cmd-help)
     (cons "load"    cmd-load)
     (cons "run"     cmd-run)
+    (cons "cont"    cmd-run)
     (cons "step"    cmd-step)
     (cons "disasm"  cmd-disasm)
+    (cons "break"   cmd-break)
     (cons "print"   cmd-print)
     (cons "print/x" cmd-print/x)
     (cons "print/b" cmd-print/b))))
