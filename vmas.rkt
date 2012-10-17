@@ -1,37 +1,35 @@
-#lang racket
-
 ;; VM assembler driver
+#lang racket/base
 
 (require racket/cmdline
-	 "private/assembler.rkt"
-	 "info.rkt")
+	 "info.rkt"
+	 "private/assembler.rkt")
 
 (define (show-version)
   (printf "VM Assembler v~a~%" vm-version)
-  (printf "Copyright (C) 2012 ~a~%" vm-author)
-  (exit 0))
+  (printf "Copyright (C) 2012 ~a~%" vm-author))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Command-line parsing
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define out (make-parameter "out.bin"))
-
-(define (file-to-assemble)
+(define filename
   (command-line
    #:once-each
    [("-v" "--version") "Display the assembler version"
-    (show-version)]
+    (show-version) (exit 0)]
    [("-o" "--out") output-filename "Output file name"
     (out output-filename)]
    #:args (filename)
    filename))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Main
-(define (main)
-  (define filename (file-to-assemble))
-  (with-output-to-file (out) #:exists 'replace
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(with-output-to-file
+    (out) #:exists 'replace
     (lambda ()
-      (write-bytes (compile-file filename))))
-  (values))
+      (write-bytes (compile-file filename))
+      (values)))
 
-;; Execute main
-(main)
 
