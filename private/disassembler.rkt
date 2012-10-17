@@ -1,7 +1,7 @@
 ;; Bytecode disassembler
 #lang racket
 
-(require "bits.rkt"
+(require "../utils/bits.rkt"
 	 "registers.rkt"
 	 "memory.rkt"
 	 "opcodes.rkt"

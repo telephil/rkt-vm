@@ -1,9 +1,9 @@
 #lang racket
 
-(require "bits.rkt"
-	 "memory.rkt"
+(require "memory.rkt"
 	 "registers.rkt"
-	 "opcodes.rkt")
+	 "opcodes.rkt"
+	 "../utils/bits.rkt")
 
 (struct vm (memory registers flags))
 

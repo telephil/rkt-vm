@@ -1,5 +1,7 @@
 ;; Bit manipulation functions
-#lang racket
+#lang racket/base
+
+(require racket/contract/base)
 
 (provide/contract
  [untag (integer? integer? . -> . integer?)]
