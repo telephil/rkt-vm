@@ -1,5 +1,5 @@
 # Build VM command line tools
-EXE := vmas vmr vmdb
+EXE := vmas vm vmdb
 DEP := $(EXE:=.deps)
 
 all: $(EXE)
