@@ -63,7 +63,7 @@
    
    ;; ID
    [(:: alphabetic (:+ (:or alphabetic numeric)))
-    (token-ID (string->symbol lexeme))]
+    (token-ID (string->symbol (string-downcase lexeme)))]
 
    ;; LABEL
    [(:: alphabetic (:* (:or alphabetic numeric #\$ #\_ #\.)) ":")
