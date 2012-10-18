@@ -1,99 +1,59 @@
 #lang racket/base
 
 (require racket/port
-         racket/bool
-         rackunit
-         rackunit/text-ui
+	 rackunit
          parser-tools/lex)
 
-(require/expose "../assembler/asm-parser.rkt" (asm-lexer))
+(require/expose "../assembler/asm-parser.rkt"
+		(asm-lexer token-ID token-LABEL token-REGISTER token-NUMBER))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Tests case creation macros
+;; Lexer tests utils
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Create a test case for a given lexer token
-(define-syntax make-lexer-token-test-case
-  (syntax-rules ()
-    [(_ test str name value op)
-     (test-case test
-      (call-with-input-string str
-                              (λ (ip)
-                                (let ([token (asm-lexer ip)])
-                                  (check-pred position-token? token "Not a position token")
-                                  (check-pred token? (position-token-token token) "Not a token")
-                                  (check-eq? (token-name (position-token-token token)) name "Invalid name")
-                                  (check op (token-value (position-token-token token)) value "Invalid value"))
-                                (let ([token (asm-lexer ip)])
-                                  (check-pred position-token? token)
-                                  (check-eq? (position-token-token token) 'EOF)))))]))
-
-(define-syntax create-lexer-token-take-case-macro
-  (syntax-rules ()
-    [(_ mname type op)
-     (define-syntax mname
-       (syntax-rules ()
-         [(_ name in out)
-          (make-lexer-token-test-case name in type out op)]))]))
-
-(create-lexer-token-take-case-macro id-test-case       'ID       symbol=?)
-(create-lexer-token-take-case-macro label-test-case    'LABEL    string=?)
-(create-lexer-token-take-case-macro register-test-case 'REGISTER symbol=?)
-(create-lexer-token-take-case-macro number-test-case   'NUMBER   =)
+(define (collect-lexer-tokens instr)
+  (call-with-input-string
+   instr
+   (lambda (ip)
+     (define producer (lambda () (position-token-token (asm-lexer ip))))
+     (for/list ([token (in-producer producer 'EOF)])
+       token))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Lexer tests
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-test-suite id-tests
-  (id-test-case "mov" "mov" 'mov)
-  (id-test-case "Cmp" "Cmp" 'cmp)
-  (id-test-case "jZ" "jZ" 'jz)
-  (id-test-case "jNe" "jNe" 'jne)
-  (id-test-case "PUSH" "PUSH" 'push))
-
-(define-test-suite label-tests
-  (label-test-case "label" "label:" "label")
-  (label-test-case "label0" "label0:" "label0")
-  (label-test-case "label0a" "label0a:" "label0a")
-  (label-test-case "label$" "label$:" "label$")
-  (label-test-case "label_a" "label_a:" "label_a")
-  (label-test-case "label.l" "label.l:" "label.l")
-  (label-test-case "label.l42" "label.l42:" "label.l42")
-  (label-test-case "label.l42" "label.42:" "label.42")
-  (label-test-case "label.$" "label.$:" "label.$"))
-
-(define-test-suite register-tests
-  (register-test-case "reg r0" "r0" 'r0)
-  (register-test-case "reg R8" "R8" 'r8)
-  (register-test-case "reg Ip" "Ip" 'ip)
-  (register-test-case "reg sP" "sP" 'sp)
-  (register-test-case "reg BP" "BP" 'bp))
-
-(define-test-suite number-tests
-  (number-test-case "dec" "42" 42)
-  (number-test-case "dec2" "000000042" 42)
-  (number-test-case "bin" "101010b" 42)
-  (number-test-case "bin2" "00101010b" 42)
-  (number-test-case "hex" "0x2A" 42)
-  (number-test-case "hex2" "0x000000000002A" 42)
-  (number-test-case "hex3" "0xfF002A" 16711722))
-
-
-(define-test-suite lexer-tests
-  id-tests
-  label-tests
-  register-tests
-  number-tests)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Parser tests
+;; Base tests - Single tokens
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; ID tokens
+(check-equal? (collect-lexer-tokens "mov")  (list (token-ID 'mov)))
+(check-equal? (collect-lexer-tokens "Cmp")  (list (token-ID 'cmp)))
+(check-equal? (collect-lexer-tokens "jZ")   (list (token-ID 'jz)))
+(check-equal? (collect-lexer-tokens "jNe")  (list (token-ID 'jne)))
+(check-equal? (collect-lexer-tokens "PUSH") (list (token-ID 'push)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Public test suite
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define-test-suite all-tests
-  lexer-tests)
+;; LABEL tokens
+(check-equal? (collect-lexer-tokens "label:")      (list (token-LABEL "label")))
+(check-equal? (collect-lexer-tokens "label0:")     (list (token-LABEL "label0")))
+(check-equal? (collect-lexer-tokens "label0a:")    (list (token-LABEL "label0a")))
+(check-equal? (collect-lexer-tokens "label$:")     (list (token-LABEL "label$")))
+(check-equal? (collect-lexer-tokens "label_a:")    (list (token-LABEL "label_a")))
+(check-equal? (collect-lexer-tokens "label.l:")    (list (token-LABEL "label.l")))
+(check-equal? (collect-lexer-tokens "label.l42:")  (list (token-LABEL "label.l42")))
+(check-equal? (collect-lexer-tokens "label.42:")   (list (token-LABEL "label.42")))
+(check-equal? (collect-lexer-tokens "label.$:")    (list (token-LABEL "label.$")))
+(check-equal? (collect-lexer-tokens "label.$42l:") (list (token-LABEL "label.$42l")))
 
-(run-tests all-tests)
+;; REGISTER tokens
+(check-equal? (collect-lexer-tokens "r0") (list (token-REGISTER 'r0)))
+(check-equal? (collect-lexer-tokens "R8") (list (token-REGISTER 'r8)))
+(check-equal? (collect-lexer-tokens "Ip") (list (token-REGISTER 'ip)))
+(check-equal? (collect-lexer-tokens "sP") (list (token-REGISTER 'sp)))
+(check-equal? (collect-lexer-tokens "BP") (list (token-REGISTER 'bp)))
+
+;; NUMBER tokens
+(check-equal? (collect-lexer-tokens "42") (list (token-NUMBER 42)))
+(check-equal? (collect-lexer-tokens "0000000042") (list (token-NUMBER 42)))
+(check-equal? (collect-lexer-tokens "101010b") (list (token-NUMBER 42)))
+(check-equal? (collect-lexer-tokens "00101010b") (list (token-NUMBER 42)))
+(check-equal? (collect-lexer-tokens "0x2a") (list (token-NUMBER 42)))
+(check-equal? (collect-lexer-tokens "0x00000000002A") (list (token-NUMBER 42)))
+(check-equal? (collect-lexer-tokens "0xfF002A") (list (token-NUMBER 16711722)))
+
