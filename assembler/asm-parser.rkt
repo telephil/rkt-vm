@@ -2,6 +2,7 @@
 
 (require "syntax.rkt"
          "../vm/opcodes.rkt"
+	 syntax/readerr
          parser-tools/yacc
          parser-tools/lex
          (prefix-in : parser-tools/lex-sre))
@@ -15,7 +16,21 @@
  [parse-string (-> string? insn-list/c)]
  [parse-file (-> string? insn-list/c)])
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utils
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; check that there's a whitespace or eof coming up in the input-port.
+(define (assert-delimiter-follows! lexeme ip)
+  (define next-char (peek-char ip))
+  (unless (or (eof-object? next-char)
+              (char-whitespace? next-char)
+	      (char=? next-char #\,))
+    (define-values (line column position) (port-next-location ip))
+    (raise-read-error (format "expected delimiter after ~e, got ~e" lexeme (string next-char))
+                      (object-name ip)
+                      line column position 1)))
+
 (define (bin-string->number str)
   (string->number
    (substring str 0 (- (string-length str) 1))
@@ -59,26 +74,38 @@
       
    ;; Register
    [register
-    (token-REGISTER (string->symbol (string-downcase lexeme)))]
+    (begin
+      (assert-delimiter-follows! lexeme input-port)
+      (token-REGISTER (string->symbol (string-downcase lexeme))))]
    
    ;; ID
    [(:: alphabetic (:+ (:or alphabetic numeric)))
-    (token-ID (string->symbol (string-downcase lexeme)))]
+    (begin
+      (assert-delimiter-follows! lexeme input-port)
+      (token-ID (string->symbol (string-downcase lexeme))))]
 
    ;; LABEL
    [(:: alphabetic (:* (:or alphabetic numeric #\$ #\_ #\.)) ":")
-    (token-LABEL (substring lexeme 0 (- (string-length lexeme) 1)))]
+    (begin
+      (assert-delimiter-follows! lexeme input-port)
+      (token-LABEL (substring lexeme 0 (- (string-length lexeme) 1))))]
    
    ;; NUMBER
    ;;; - Binary
    [(:: (:+ digit2) "b")
-    (token-NUMBER (bin-string->number lexeme))]
+    (begin
+      (assert-delimiter-follows! lexeme input-port)
+      (token-NUMBER (bin-string->number lexeme)))]
    ;;; - Decimal
    [(:+ digit)
-    (token-NUMBER (string->number lexeme))]
+    (begin
+      (assert-delimiter-follows! lexeme input-port)
+      (token-NUMBER (string->number lexeme)))]
    ;;; - Hexadecimal
    [(:: "0x" (:+ digit16))
-    (token-NUMBER (string->number (substring lexeme 2) 16))]))
+    (begin
+      (assert-delimiter-follows! lexeme input-port)
+      (token-NUMBER (string->number (substring lexeme 2) 16)))]))
 
 
 ;; instruction syntax construction
