@@ -28,6 +28,8 @@
 (check-equal? (collect-lexer-tokens "jZ")   (list (token-ID 'jz)))
 (check-equal? (collect-lexer-tokens "jNe")  (list (token-ID 'jne)))
 (check-equal? (collect-lexer-tokens "PUSH") (list (token-ID 'push)))
+(check-exn exn:fail? (lambda () (collect-lexer-tokens "mov+")))
+(check-exn exn:fail? (lambda () (collect-lexer-tokens "m.ov")))
 
 ;; LABEL tokens
 (check-equal? (collect-lexer-tokens "label:")      (list (token-LABEL "label")))
@@ -40,6 +42,7 @@
 (check-equal? (collect-lexer-tokens "label.42:")   (list (token-LABEL "label.42")))
 (check-equal? (collect-lexer-tokens "label.$:")    (list (token-LABEL "label.$")))
 (check-equal? (collect-lexer-tokens "label.$42l:") (list (token-LABEL "label.$42l")))
+(check-exn exn:fail? (lambda () (collect-lexer-tokens "label#:")))
 
 ;; REGISTER tokens
 (check-equal? (collect-lexer-tokens "r0") (list (token-REGISTER 'r0)))
@@ -56,4 +59,5 @@
 (check-equal? (collect-lexer-tokens "0x2a") (list (token-NUMBER 42)))
 (check-equal? (collect-lexer-tokens "0x00000000002A") (list (token-NUMBER 42)))
 (check-equal? (collect-lexer-tokens "0xfF002A") (list (token-NUMBER 16711722)))
-
+(check-exn exn:fail? (lambda () (collect-lexer-tokens "42a")))
+(check-exn exn:fail? (lambda () (collect-lexer-tokens "0xG")))
