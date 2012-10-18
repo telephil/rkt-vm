@@ -1,11 +1,13 @@
 ;; Bytecode disassembler
-#lang racket
+#lang racket/base
 
-(require "../utils/bits.rkt"
+(require racket/contract/base
+	 racket/match
+	 srfi/13 ;; for string-pad
 	 "registers.rkt"
 	 "memory.rkt"
 	 "opcodes.rkt"
-	 srfi/13)
+	 "../utils/bits.rkt")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Contract

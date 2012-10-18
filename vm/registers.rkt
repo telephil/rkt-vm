@@ -1,4 +1,6 @@
-#lang racket
+#lang racket/base
+
+(require racket/contract/base)
 
 (provide/contract
  [register->bytecode (symbol? . -> . integer?)]

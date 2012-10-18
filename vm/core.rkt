@@ -1,6 +1,8 @@
-#lang racket
+#lang racket/base
 
-(require "memory.rkt"
+(require racket/contract/base
+	 racket/match
+	 "memory.rkt"
 	 "registers.rkt"
 	 "opcodes.rkt"
 	 "../utils/bits.rkt")

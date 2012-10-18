@@ -1,6 +1,6 @@
-#lang racket
+#lang racket/base
 
-;(require rnrs/bytevectors-6)
+(require racket/contract/base)
 
 (define (index? x)
   (and (integer? x) (or (zero? x) (positive? x))))

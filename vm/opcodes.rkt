@@ -1,4 +1,6 @@
-#lang racket
+#lang racket/base
+
+(require racket/contract/base)
 
 (provide/contract
  [opcode->bytecode (symbol? . -> . (or/c integer? #f))]
