@@ -4,6 +4,7 @@
 (require racket/contract/base)
 
 (provide/contract
+ [list-breakpoints    (-> list?)]
  [add-breakpoint      (integer? . -> . void)]
  [remove-breakpoint   (integer? . -> . void)]
  [enable-breakpoint   (integer? . -> . void)]
@@ -14,6 +15,10 @@
 
 ;; Map of address -> state (enabled if #t, disabled if #f)
 (define breakpoints (make-hash))
+
+(define (list-breakpoints)
+  (sort (for/list ([(k v) (in-hash breakpoints)])
+	  (cons k v)) < #:key car))
 
 ;; Add a breakpoint for the given address
 (define (add-breakpoint addr)

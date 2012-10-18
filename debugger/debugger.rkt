@@ -1,5 +1,5 @@
 ;; Debugger implementation
-#lang racket/base
+#lang at-exp racket/base
 
 (require racket/match
 	 racket/string
@@ -111,6 +111,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; command definitions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define S string-append)
 
 ;; Register commands
 (define (register-commands)
@@ -149,6 +150,7 @@
 		    #t #t
 		    "- continue program execution"
 		    (lambda (args) (continue)))
+
   (register-command "step" "s"
 		    0 0
 		    #t #t
@@ -161,22 +163,66 @@
 		    "<address> - break execution of program at address"
 		    (lambda (args) (add-breakpoint (string->number (car args) 16))))
 
+  (register-command "list-breakpoints" "lb"
+		    0 0
+		    #f #f
+		    "- list current breakpoints"
+		    (lambda (args) 
+		      (printf "Breakpoints:~%")
+		      (for-each (lambda (brk) 
+				  (printf "@ 0x~a (~a)~%"
+					  (number->string (car brk) 16)
+					  (or (and (cdr brk) "enabled") "disabled")))
+				(list-breakpoints))))
+
+  (register-command "enable-breakpoint" "eb"
+		    1 1
+		    #f #f
+		    "<address> - enable previously defined breakpoint"
+		    (lambda (args) (enable-breakpoint (string->number (car args) 16))))
+  
+  (register-command "enable-breakpoints" "ebs"
+		    0 0
+		    #f #f
+		    "- enable all previously defined breakpoints"
+		    (lambda (args) (enable-breakpoints)))
+
+  (register-command "disable-breakpoint" "db"
+		    1 1
+		    #f #f
+		    "<address> - disable previously defined breakpoint"
+		    (lambda (args) (disable-breakpoint (string->number (car args) 16))))
+  
+  (register-command "disable-breakpoints" "dbs"
+		    0 0
+		    #f #f
+		    "- disable all previously defined breakpoints"
+		    (lambda (args) (disable-breakpoints)))
+  
+  (register-command "remove-breakpoint" "rb"
+		    1 1
+		    #f #f
+		    "<address> - remove previously defined breakpoint"
+		    (lambda (args) (remove-breakpoint (string->number (car args) 16))))
+
   (register-command "print" "p"
 		    1 1
 		    #t #f
-		    "registers - print all registers\n           regs - print all registers\n          <register> - print register value"
+		    @S{registers - print all registers
+				   regs - print all registers
+				   <register> - print register value}
 		    (lambda (args) (do-print (car args))))
 
   (register-command "print/x" "p/x"
 		    1 1
 		    #t #f
-		    "hexadecimal output version of print"
+		    "- hexadecimal output version of print"
 		    (lambda (args) (do-print (car args) 16)))
 
   (register-command "print/b" "p/b"
 		    1 1
 		    #t #f
-		    "binary output version of print"
+		    "- binary output version of print"
 		    (lambda (args) (do-print (car args) 2))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

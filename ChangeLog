@@ -1,3 +1,11 @@
+2012-10-18  Philippe Mechaï  <philippe.mechai@gmail.com>
+
+	* debugger/debugger.rkt (register-commands): add missing
+	breakpoints related commands
+
+	* debugger/breakpoints.rkt (list-breakpoints): list all defined
+	breakpoints along with their status
+
 2012-10-16  Philippe Mechaï  <philippe.mechai@gmail.com>
 
 	* vmdb.rkt (command-handlers): Added new commands for breakpoints
