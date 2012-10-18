@@ -9,7 +9,7 @@
 	 "../private/vm.rkt"
 	 "../private/registers.rkt"
 	 "../private/opcodes.rkt"
-	 "../private/disassembler.rkt"
+	 "../assembler/disassembler.rkt"
 	 "../utils/readline.rkt")
 
 (provide run-debugger)

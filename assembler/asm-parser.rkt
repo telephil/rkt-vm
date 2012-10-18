@@ -1,7 +1,7 @@
 #lang racket
 
 (require "syntax.rkt"
-         "opcodes.rkt"
+         "../private/opcodes.rkt"
          parser-tools/yacc
          parser-tools/lex
          (prefix-in : parser-tools/lex-sre))
@@ -25,6 +25,23 @@
 (define-tokens       data  (ID LABEL LABEL-REF REGISTER NUMBER))
 (define-empty-tokens delim (COMMA NEWLINE EOF))
 
+;; Lexer abbreviations
+(define-lex-abbrevs
+  [b (char-set "bB")]
+  [i (char-set "iI")]
+  [p (char-set "pP")]
+  [r (char-set "rR")]
+  [s (char-set "sS")]
+  
+  [register (:or (:: r (:/ "0" "8"))
+		 (:: s p)
+		 (:: b p)
+		 (:: i p))]
+
+  [digit (:/ "0" "9")]
+  [digit2 (:/ "0" "1")]
+  [digit16 (:/ "af" "AF" "09")])
+
 ;; Lexer
 (define asm-lexer
   (lexer-src-pos
@@ -38,11 +55,10 @@
    [#\, 'COMMA]
    
    ;; Newline
-   [ #\newline 'NEWLINE]
+   [#\newline 'NEWLINE]
       
    ;; Register
-   [(:or (:: (:or #\r #\R) (:/ "0" "8"))
-         (:: (:or #\s #\S #\b #\B #\i #\I) (:or #\p #\P)))
+   [register
     (token-REGISTER (string->symbol (string-downcase lexeme)))]
    
    ;; ID
@@ -55,13 +71,13 @@
    
    ;; NUMBER
    ;;; - Binary
-   [(:: (:+ (:or "0" "1")) "b")
+   [(:: (:+ digit2) "b")
     (token-NUMBER (bin-string->number lexeme))]
    ;;; - Decimal
-   [(:+ numeric)
+   [(:+ digit)
     (token-NUMBER (string->number lexeme))]
    ;;; - Hexadecimal
-   [(:: "0x" (:+ (:or (:/ "0" "9") (:/ "a" "f") (:/ "A" "F"))))
+   [(:: "0x" (:+ digit16))
     (token-NUMBER (string->number (substring lexeme 2) 16))]))
 
 
