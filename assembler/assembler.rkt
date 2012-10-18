@@ -1,6 +1,10 @@
-#lang racket
+#lang racket/base
 
-(require "parser.rkt"
+(require racket/contract/base
+	 racket/bool
+	 racket/list
+	 racket/port
+	 "parser.rkt"
          "syntax.rkt"
          "../vm/registers.rkt"
          "../vm/opcodes.rkt")

@@ -1,11 +1,13 @@
-#lang racket
+#lang racket/base
 
-(require "lexer.rkt"
-	 "syntax.rkt"
-         "../vm/opcodes.rkt"
-	 syntax/readerr
+(require racket/contract/base
+	 racket/bool
+	 racket/port
          parser-tools/yacc
-         parser-tools/lex)
+         parser-tools/lex
+	 "lexer.rkt"
+	 "syntax.rkt"
+         "../vm/opcodes.rkt")
 
 ;; Contract for parser result
 (define insn-list/c (listof (or/c label-stx? insn-stx?)))

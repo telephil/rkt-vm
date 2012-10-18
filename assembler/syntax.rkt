@@ -1,4 +1,4 @@
-#lang racket
+#lang racket/base
 
 ;; syntax tree definition
 
@@ -9,17 +9,12 @@
  (struct-out register-stx)
  (struct-out number-stx))
 
-(struct label-stx (name)
-  #:inspector (make-inspector))
+(struct label-stx (name))
 
-(struct opcode-stx (name)
-  #:inspector (make-inspector))
+(struct opcode-stx (name))
 
-(struct register-stx (name)
-  #:inspector (make-inspector))
+(struct register-stx (name))
 
-(struct number-stx (value)
-  #:inspector (make-inspector))
+(struct number-stx (value))
 
-(struct insn-stx (op arg1 arg2)
-  #:inspector (make-inspector))
+(struct insn-stx (op arg1 arg2))
