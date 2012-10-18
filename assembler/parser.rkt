@@ -82,6 +82,10 @@
            (begin
              (check-opcode-stx $1 1 source-name $1-start-pos)
              (insn-stx (opcode-stx $1) (label-stx (symbol->string $2)) #f))]
+	  [(ID NUMBER NEWLINE) ;; e.g. PUSH 42
+	   (begin
+	     (check-opcode-stx $1 1 source-name $1-start-pos)
+	     (insn-stx (opcode-stx $1) (number-stx $2) #f))]
           [(ID REGISTER NEWLINE)
            (begin
              (check-opcode-stx $1 1 source-name $1-start-pos)

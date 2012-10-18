@@ -1,5 +1,8 @@
 2012-10-18  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* assembler/parser.rkt (asm-parser): handle instructions with a
+	single numeric argument
+
 	* assembler/asm-parser.rkt (asm-lexer): make ID symbols lowercase
 
 	* debugger/debugger.rkt (register-commands): add missing
