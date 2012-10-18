@@ -2,5 +2,6 @@
 
 for t in tests/test*.rkt
 do
-	raco test $t
+    echo ">>> $t"
+    raco test $t
 done
