@@ -6,7 +6,7 @@
 	 readline/readline
 	 "command.rkt"
 	 "breakpoints.rkt"
-	 "../vm/vm.rkt"
+	 "../vm/core.rkt"
 	 "../vm/registers.rkt"
 	 "../vm/opcodes.rkt"
 	 "../vm/disassembler.rkt"

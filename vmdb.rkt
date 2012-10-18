@@ -3,7 +3,7 @@
 
 (require racket/cmdline
 	 "info.rkt"
-	 "debugger/debugger.rkt")
+	 "debugger/core.rkt")
 
 (define (show-version)
   (printf "VM Debugger v~a~%" vm-version)
