@@ -2,7 +2,7 @@
 #lang racket/base
 
 (require racket/cmdline
-	 "private/vm.rkt"
+	 "vm/vm.rkt"
 	 "info.rkt")
 
 (define (show-version)

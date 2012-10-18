@@ -2,8 +2,8 @@
 
 (require "asm-parser.rkt"
          "syntax.rkt"
-         "../private/registers.rkt"
-         "../private/opcodes.rkt")
+         "../vm/registers.rkt"
+         "../vm/opcodes.rkt")
 
 (provide/contract
  [compile-string (string? . -> . bytes?)]

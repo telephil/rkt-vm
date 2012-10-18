@@ -1,7 +1,7 @@
 #lang racket
 
 (require "syntax.rkt"
-         "../private/opcodes.rkt"
+         "../vm/opcodes.rkt"
          parser-tools/yacc
          parser-tools/lex
          (prefix-in : parser-tools/lex-sre))

@@ -6,10 +6,10 @@
 	 readline/readline
 	 "command.rkt"
 	 "breakpoints.rkt"
-	 "../private/vm.rkt"
-	 "../private/registers.rkt"
-	 "../private/opcodes.rkt"
-	 "../assembler/disassembler.rkt"
+	 "../vm/vm.rkt"
+	 "../vm/registers.rkt"
+	 "../vm/opcodes.rkt"
+	 "../vm/disassembler.rkt"
 	 "../utils/readline.rkt")
 
 (provide run-debugger)
