@@ -1,11 +1,11 @@
 #lang racket
 
-(require "syntax.rkt"
+(require "lexer.rkt"
+	 "syntax.rkt"
          "../vm/opcodes.rkt"
 	 syntax/readerr
          parser-tools/yacc
-         parser-tools/lex
-         (prefix-in : parser-tools/lex-sre))
+         parser-tools/lex)
 
 ;; Contract for parser result
 (define insn-list/c (listof (or/c label-stx? insn-stx?)))
@@ -15,98 +15,6 @@
  [parse (-> input-port? string? insn-list/c)]
  [parse-string (-> string? insn-list/c)]
  [parse-file (-> string? insn-list/c)])
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Utils
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; check that there's a whitespace or eof coming up in the input-port.
-(define (assert-delimiter-follows! lexeme ip)
-  (define next-char (peek-char ip))
-  (unless (or (eof-object? next-char)
-              (char-whitespace? next-char)
-	      (char=? next-char #\,))
-    (define-values (line column position) (port-next-location ip))
-    (raise-read-error (format "expected delimiter after ~e, got ~e" lexeme (string next-char))
-                      (object-name ip)
-                      line column position 1)))
-
-(define (bin-string->number str)
-  (string->number
-   (substring str 0 (- (string-length str) 1))
-   2))
-
-;; Lexer tokens definition
-(define-tokens       data  (ID LABEL LABEL-REF REGISTER NUMBER))
-(define-empty-tokens delim (COMMA NEWLINE EOF))
-
-;; Lexer abbreviations
-(define-lex-abbrevs
-  [b (char-set "bB")]
-  [i (char-set "iI")]
-  [p (char-set "pP")]
-  [r (char-set "rR")]
-  [s (char-set "sS")]
-  
-  [register (:or (:: r (:/ "0" "8"))
-		 (:: s p)
-		 (:: b p)
-		 (:: i p))]
-
-  [digit (:/ "0" "9")]
-  [digit2 (:/ "0" "1")]
-  [digit16 (:/ "af" "AF" "09")])
-
-;; Lexer
-(define asm-lexer
-  (lexer-src-pos
-   ;; EOF
-   [(eof) 'EOF]
-   
-   ;; Skip whitespaces
-   [(:or #\tab #\space) (return-without-pos (asm-lexer input-port))]
-   
-   ;; Comma
-   [#\, 'COMMA]
-   
-   ;; Newline
-   [#\newline 'NEWLINE]
-      
-   ;; Register
-   [register
-    (begin
-      (assert-delimiter-follows! lexeme input-port)
-      (token-REGISTER (string->symbol (string-downcase lexeme))))]
-   
-   ;; ID
-   [(:: alphabetic (:+ (:or alphabetic numeric)))
-    (begin
-      (assert-delimiter-follows! lexeme input-port)
-      (token-ID (string->symbol (string-downcase lexeme))))]
-
-   ;; LABEL
-   [(:: alphabetic (:* (:or alphabetic numeric #\$ #\_ #\.)) ":")
-    (begin
-      (assert-delimiter-follows! lexeme input-port)
-      (token-LABEL (substring lexeme 0 (- (string-length lexeme) 1))))]
-   
-   ;; NUMBER
-   ;;; - Binary
-   [(:: (:+ digit2) "b")
-    (begin
-      (assert-delimiter-follows! lexeme input-port)
-      (token-NUMBER (bin-string->number lexeme)))]
-   ;;; - Decimal
-   [(:+ digit)
-    (begin
-      (assert-delimiter-follows! lexeme input-port)
-      (token-NUMBER (string->number lexeme)))]
-   ;;; - Hexadecimal
-   [(:: "0x" (:+ digit16))
-    (begin
-      (assert-delimiter-follows! lexeme input-port)
-      (token-NUMBER (string->number (substring lexeme 2) 16)))]))
-
 
 ;; instruction syntax construction
 (define (raise-invalid-argcount opcode expected received source-name start)

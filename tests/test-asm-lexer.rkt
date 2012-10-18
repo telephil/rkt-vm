@@ -4,7 +4,7 @@
 	 rackunit
          parser-tools/lex)
 
-(require/expose "../assembler/asm-parser.rkt"
+(require/expose "../assembler/lexer.rkt"
 		(asm-lexer token-ID token-LABEL token-REGISTER token-NUMBER))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
