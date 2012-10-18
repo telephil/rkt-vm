@@ -3,7 +3,7 @@
 
 (require racket/cmdline
 	 "../info.rkt"
-	 "assembler.rkt")
+	 "core.rkt")
 
 (define (show-version)
   (printf "VM Assembler v~a~%" vm-version)
