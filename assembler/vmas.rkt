@@ -2,8 +2,8 @@
 #lang racket/base
 
 (require racket/cmdline
-	 "info.rkt"
-	 "assembler/assembler.rkt")
+	 "../info.rkt"
+	 "assembler.rkt")
 
 (define (show-version)
   (printf "VM Assembler v~a~%" vm-version)

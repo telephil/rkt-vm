@@ -2,8 +2,8 @@
 #lang racket/base
 
 (require racket/cmdline
-	 "vm/core.rkt"
-	 "info.rkt")
+	 "../info.rkt"
+	 "core.rkt")
 
 (define (show-version)
   (printf "VM v~a~%" vm-version)
