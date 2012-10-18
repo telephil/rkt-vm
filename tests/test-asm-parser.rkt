@@ -63,7 +63,7 @@
   (label-test-case "label.$" "label.$:" "label.$"))
 
 (define-test-suite register-tests
-  (register-test-case "reg r0" "r1" 'r0)
+  (register-test-case "reg r0" "r0" 'r0)
   (register-test-case "reg R8" "R8" 'r8)
   (register-test-case "reg Ip" "Ip" 'ip)
   (register-test-case "reg sP" "sP" 'sp)
