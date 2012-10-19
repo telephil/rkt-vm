@@ -1,3 +1,3 @@
 #!/bin/sh
 
-racket -t debugger/vmdb.rkt -- $@
+exec racket -t debugger/vmdb.rkt -- $@

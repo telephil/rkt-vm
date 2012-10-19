@@ -1,3 +1,3 @@
 #!/bin/sh
 
-racket -t vm/vm.rkt -- $@
+exec racket -t vm/vm.rkt -- $@

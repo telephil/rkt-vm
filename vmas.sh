@@ -1,3 +1,3 @@
 #!/bin/sh
 
-racket -t assembler/vmas.rkt -- $@
+exec racket -t assembler/vmas.rkt -- $@
