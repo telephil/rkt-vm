@@ -4,6 +4,7 @@
 (require racket/contract/base)
 
 (provide/contract
+ [tag (integer? integer? . -> . integer?)]
  [untag (integer? integer? . -> . integer?)]
  [clear-tags (integer? . -> . integer?)])
 

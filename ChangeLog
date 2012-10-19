@@ -1,5 +1,7 @@
 2012-10-19  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* utils/bits.rkt: add missing tag function provide 
+
 	* assembler/core.rkt: moved tag method from assembler/core
 	and modify call to match signature change
 
