@@ -7,7 +7,8 @@
 	 "parser.rkt"
          "syntax.rkt"
          "../vm/registers.rkt"
-         "../vm/opcodes.rkt")
+         "../vm/opcodes.rkt"
+	 "../utils/bits.rkt")
 
 (provide/contract
  [compile-string (string? . -> . bytes?)]
@@ -58,9 +59,6 @@
 (define (integer->s64bytes n)
   (integer->integer-bytes n 8 #t (system-big-endian?)))
 
-(define (tag n bit)
-  (bitwise-ior n (arithmetic-shift 1 bit)))
-
 (define (encode-register stx)
   (bytes (register->bytecode (register-stx-name stx))))
 
@@ -77,11 +75,11 @@
 (define (tag-arg opcode arg bit)
   (cond
     [(register-stx? arg)
-     (tag opcode bit)]
+     (tag bit opcode)]
     [(number-stx? arg)
-     (tag opcode (sub1 bit))]
+     (tag (sub1 bit) opcode)]
     [(label-stx? arg)
-     (tag opcode (sub1 bit))]))
+     (tag (sub1 bit) opcode)]))
 
 (define (encode-opcode opcode arg1 arg2)
   (when arg1 (set! opcode (tag-arg opcode arg1 15)))

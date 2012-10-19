@@ -1,3 +1,10 @@
+2012-10-19  Philippe Mechaï  <philippe.mechai@gmail.com>
+
+	* assembler/core.rkt: moved tag method from assembler/core
+	and modify call to match signature change
+
+	* utils/bits.rkt (tag): moved tag method from assembler/core
+
 2012-10-18  Philippe Mechaï  <philippe.mechai@gmail.com>
 
 	* assembler/parser.rkt (asm-parser): handle instructions with a
