@@ -1,7 +1,5 @@
 #!/bin/sh
 
-for t in tests/test*.rkt
-do
-    echo ">>> $t"
-    raco test $t
-done
+cd tests
+exec racket -t run-tests.rkt
+cd ..
