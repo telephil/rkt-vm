@@ -3,35 +3,32 @@
 (require rackunit
          racket/port
          racket/string
-         racket/date)
+         racket/path
+	 racket/cmdline)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Utils
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; test-file? : string? -> boolean?
-;; check if a file is a test file
-(define (test-file? filename)
-  (regexp-match #rx"test-.*\\.rkt" filename))
+;; pad-number: number? integer? -> string?
+(define (pad-number n len)
+  (define s (number->string n))
+  (string-append (make-string (- len (string-length s)) #\space) s))
 
-;; test-file-list : -> list?
-;; return a list of test files from current-directory
-(define (test-file-list)
-  (filter test-file? 
-          (map path->string (directory-list))))
+;; clean-filename : string? -> string?
+(define (clean-filename filename)
+  (define path (file-name-from-path (string->path filename)))
+  (define s (string-replace (path->string path) ".rkt" ""))
+  (string-append s
+   (make-string (- 16 (string-length s)) #\space)))
 
-;; clean-datetime-string : void -> void
-(define (clean-datetime-string)
-  (foldl (lambda (from to result) 
-           (string-replace result from to))
-         (date->string (seconds->date (current-seconds)) #t)
-         '(":" "-" " ") 
-         '(""  ""  "_")))
+;; ansi-format : string? -> string?
+(define (ansi-format message color)
+  (define ESC #\u001b)
+  (format "~a[~am~a~a[0m" ESC color message ESC))
 
-;; report-file-name : -> string?
-(define (errors-file-name)
-  (date-display-format 'iso-8601)
-  (format "test-errors-~a.txt" (clean-datetime-string)))
+(define RED 31)
+(define GREEN 32)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Test execution
@@ -51,32 +48,40 @@
       (success (add1 (success)))))
   (void))
 
-;; print-test-report : void -> void
-;; print test report
-(define (print-test-report)
+;; format-test-report : string? -> string?
+(define (format-test-report filename)
   (define failed (- (total) (success)))
-  (printf "~a (total: ~a / failed: ~a)~%"
-          (if (zero? failed) "SUCCESS" "FAILURE")
-          (total) failed)
-  (void))
+  (format "~a - ~a - Run: ~a - Failed: ~a"
+	  (if (zero? failed)
+	       (ansi-format "✔" GREEN)
+	       (ansi-format "✘" RED))
+	  (clean-filename filename)
+	  (pad-number (total) 3) failed))
 
-;; run-tests : void -> void
-;; run all test files
-(define (run-tests)
-  (for ([f (test-file-list)])
-    (printf ">>> ~a: " f)
+;; run-tests : void -> (listof string?)
+;; run all test files and return a list of test reports
+(define (run-tests files)
+  (for/list ([f files])
     (parameterize ([total 0]
                    [success 0])
       (dynamic-require (list 'file f) #f)
-      (print-test-report)))
+      (format-test-report f))))
+
+;; display-summary : (listof string?) -> void
+(define (display-summary reports)
+  (displayln "")
+  (displayln "Summary:")
+  (displayln (make-string 48 #\-))
+  (for-each displayln reports)
   (void))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Test execution
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; 
-(parameterize ([current-check-around custom-check-around])
-  (call-with-output-file (errors-file-name) #:exists 'append
-    (λ (out)
-      (parameterize ([current-error-port out])
-        (run-tests)))))
+(define (main arg . args)
+  (define files
+    (command-line #:args files files))
+  (parameterize ([current-check-around custom-check-around])
+    (display-summary (run-tests files))))
+
+(provide main)

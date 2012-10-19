@@ -1,5 +1,4 @@
 #!/bin/sh
 
-cd tests
-exec racket -t run-tests.rkt
-cd ..
+exec racket -t tests/run-tests.rkt -m -- tests/test-*.rkt
+
