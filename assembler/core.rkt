@@ -16,25 +16,25 @@
 
 (define (arg-size stx)
   (cond
+   [(insn-stx? stx) (+ 4 ;; = opcode size = 32 bits
+		       (arg-size (insn-stx-arg1 stx))
+		       (arg-size (insn-stx-arg2 stx)))]
    [(register-stx? stx) 1]
    [(number-stx? stx) 8]
    [(label-stx? stx) 8]
    [else 0]))
 
 (define (compute-offsets src)
-  (define off 0)
-  (list->vector
-   (filter-not false?
-	       (cons 0
-		     (for/list ([insn src])
-		       (cond
-			([label-stx? insn] #f) ;; do not include labels
-			([insn-stx? insn]
-			 (define sz (+ 4 ;; = opcode size = 32 bits
-				       (arg-size (insn-stx-arg1 insn))
-				       (arg-size (insn-stx-arg2 insn))))
-			 (set! off (+ off sz))
-			 off)))))))
+  (letrec ([loop (lambda (src acc offsets)
+		   (cond
+		    [(null? src)
+		     (list->vector (reverse offsets))]
+		    [(insn-stx? (car src))
+		     (define s (+ acc (arg-size (car src))))
+		     (loop (cdr src) s (cons s offsets))]
+		    [else
+		     (loop (cdr src) acc offsets)]))])
+    (loop src 0 '(0))))
 
 (define (compute-label-addresses src)
   (define offsets (compute-offsets src))

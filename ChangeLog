@@ -1,5 +1,8 @@
 2012-10-20  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* assembler/core.rkt (compute-offsets): improved compute-offsets
+	implementation
+
 	* vm/memory.rkt: fixed create-memory contract
 
 2012-10-19  Philippe Mechaï  <philippe.mechai@gmail.com>
