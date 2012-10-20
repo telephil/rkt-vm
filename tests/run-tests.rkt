@@ -34,10 +34,11 @@
 ;; Test execution
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; total number of tests executed
 (define total   (make-parameter 0))
-;; number of tests that succeeded
 (define success (make-parameter 0))
+
+(define all-total (make-parameter 0))
+(define all-success (make-parameter 0))
 
 ;; redefine the custom check parameter proc
 ;; to count total and succeeded tests
@@ -51,7 +52,7 @@
 ;; format-test-report : string? -> string?
 (define (format-test-report filename)
   (define failed (- (total) (success)))
-  (format "~a - ~a - Run: ~a - Failed: ~a"
+  (format "[~a] ~a - Run: ~a - Failed: ~a"
 	  (if (zero? failed)
 	       (ansi-format "✔" GREEN)
 	       (ansi-format "✘" RED))
@@ -65,15 +66,27 @@
     (parameterize ([total 0]
                    [success 0])
       (dynamic-require (list 'file f) #f)
+      (all-total (+ (all-total) (total)))
+      (all-success (+ (all-success) (success)))
       (format-test-report f))))
 
 ;; display-summary : (listof string?) -> void
 (define (display-summary reports)
+  (define separator (make-string 48 #\-))
   (displayln "")
   (displayln "Summary:")
-  (displayln (make-string 48 #\-))
+  (displayln separator)
   (for-each displayln reports)
   (void))
+
+#|
+Total:
+  (displayln separator)
+  (display (make-string 23 #\space))
+  (printf "Run: ~a - Failed: ~a~%"
+	  (pad-number (all-total) 3)
+	  (- (all-total) (all-success)))
+|#
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Test execution
