@@ -1,3 +1,7 @@
+2012-10-20  Philippe Mechaï  <philippe.mechai@gmail.com>
+
+	* vm/memory.rkt: fixed create-memory contract
+
 2012-10-19  Philippe Mechaï  <philippe.mechai@gmail.com>
 
 	* utils/bits.rkt: add missing tag function provide 

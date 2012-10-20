@@ -6,7 +6,7 @@
   (and (integer? x) (or (zero? x) (positive? x))))
 
 (provide/contract
- [create-memory (-> (and integer? positive?) void)]
+ [create-memory (-> (and integer? positive?) bytes?)]
  [store-qword   (-> bytes? index? integer? void)]
  [load-qword    (-> bytes? index? integer?)]
  [store-dword   (-> bytes? index? integer? void)]
