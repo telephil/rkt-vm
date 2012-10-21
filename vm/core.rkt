@@ -5,6 +5,7 @@
          "memory.rkt"
          "registers.rkt"
          "opcodes.rkt"
+         "../utils/ptr.rkt"
          "../utils/bits.rkt")
 
 (struct vm (memory registers flags))
@@ -117,6 +118,11 @@
   (ptr-add! ptr DWORD)
   op)
 
+(define (fetch-ptr mem ptr)
+  (define reg (fetch-reg mem ptr))
+  (define off (fetch-number mem ptr))
+  (make-collection-ptr mem (+ (reg) (off)) load-qword store-qword))
+
 (define (fetch-reg mem ptr)
   (define bc (load-byte mem (ptr)))
   (ptr-add! ptr BYTE)
@@ -128,9 +134,12 @@
   (make-parameter bc))
 
 (define (fetch-arg op bit mem ptr)
+  (define reg? (bitwise-bit-set? op bit))
+  (define imm? (bitwise-bit-set? op (sub1 bit)))
   (cond
-   [(bitwise-bit-set? op bit) (fetch-reg mem ptr)]
-   [(bitwise-bit-set? op (sub1 bit)) (fetch-number mem ptr)]
+   [(and reg? imm?) (fetch-ptr mem ptr)]
+   [reg? (fetch-reg mem ptr)]
+   [imm? (fetch-number mem ptr)]
    [else #f]))
 
 (define (fetch-insn mem ptr)

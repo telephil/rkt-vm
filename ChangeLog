@@ -1,5 +1,10 @@
 2012-10-21  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* vm/core.rkt (fetch-ptr): create ptr to memory location
+	(fetch-arg): handle ptr-stx arguments
+
+	* utils/ptr.rkt: struct that emulates a pointer behavior
+
 	* vm/disassembler.rkt: disassembly of ptr-stx args
 
 	* assembler/core.rkt (encode-arg): added encoding of ptr-stx args
