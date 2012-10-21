@@ -22,10 +22,10 @@
   (string-pad (number->string addr 16) 8 #\0))
 
 (define (op->string op)
-  (string-pad-right (opcode->string op) 6))
+  (opcode->string op))
 
 (define (reg->string reg)
-  (string-pad-right (bytecode->register reg) 3))
+  (bytecode->register reg))
 
 (define (num->string num)
   ;(string-pad (number->string num 16) 16 #\0)
@@ -91,9 +91,9 @@
   (if (= op END) #f
       (let ([res (string-append (if (= addr start) "* " "  ")
                                 (addr->string addr)
-                                ": "
+                                ":  "
                                 (op->string op)
                                 " ")])
-        (when arg1 (set! res (string-append res arg1)))
-        (when arg2 (set! res (string-append res ", " arg2)))
+        (when arg1 (set! res (string-append res "\t" arg1)))
+        (when arg2 (set! res (string-append res ",\t" arg2)))
         res)))

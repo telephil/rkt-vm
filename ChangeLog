@@ -1,3 +1,7 @@
+2012-10-22  Philippe Mechaï  <philippe.mechai@gmail.com>
+
+	* vm/disassembler.rkt (disassemble): use tabs instead of padding
+
 2012-10-21  Philippe Mechaï  <philippe.mechai@gmail.com>
 
 	* vm/core.rkt (fetch-ptr): create ptr to memory location
