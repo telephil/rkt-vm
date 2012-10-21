@@ -1,14 +1,14 @@
 #lang racket/base
 
 (require racket/contract/base
-	 racket/bool
-	 racket/list
-	 racket/port
-	 "parser.rkt"
+         racket/bool
+         racket/list
+         racket/port
+         "parser.rkt"
          "syntax.rkt"
          "../vm/registers.rkt"
          "../vm/opcodes.rkt"
-	 "../utils/bits.rkt")
+         "../utils/bits.rkt")
 
 (provide/contract
  [compile-string (string? . -> . bytes?)]
@@ -17,8 +17,8 @@
 (define (arg-size stx)
   (cond
    [(insn-stx? stx) (+ 4 ;; = opcode size = 32 bits
-		       (arg-size (insn-stx-arg1 stx))
-		       (arg-size (insn-stx-arg2 stx)))]
+                       (arg-size (insn-stx-arg1 stx))
+                       (arg-size (insn-stx-arg2 stx)))]
    [(register-stx? stx) 1]
    [(number-stx? stx) 8]
    [(label-stx? stx) 8]
@@ -26,14 +26,14 @@
 
 (define (compute-offsets src)
   (letrec ([loop (lambda (src acc offsets)
-		   (cond
-		    [(null? src)
-		     (list->vector (reverse offsets))]
-		    [(insn-stx? (car src))
-		     (define s (+ acc (arg-size (car src))))
-		     (loop (cdr src) s (cons s offsets))]
-		    [else
-		     (loop (cdr src) acc offsets)]))])
+                   (cond
+                    [(null? src)
+                     (list->vector (reverse offsets))]
+                    [(insn-stx? (car src))
+                     (define s (+ acc (arg-size (car src))))
+                     (loop (cdr src) s (cons s offsets))]
+                    [else
+                     (loop (cdr src) acc offsets)]))])
     (loop src 0 '(0))))
 
 (define (compute-label-addresses src)
@@ -44,10 +44,11 @@
                      (else
                       (define insn (car src))
                       (if (label-stx? insn)
-			  (begin
-			    (hash-set! h (label-stx-name insn) (vector-ref offsets idx))
-			    (iter (cdr src) idx h))
-			  (iter (cdr src) (add1 idx) h)))))])
+                          (begin
+                            (hash-set! h (label-stx-name insn)
+                                       (vector-ref offsets idx))
+                            (iter (cdr src) idx h))
+                          (iter (cdr src) (add1 idx) h)))))])
     (iter src 0 (make-hash))))
 
 (define (integer->s16bytes n)
@@ -87,9 +88,9 @@
   opcode)
 
 (define (encode-insn stx labels)
-  (define opcode (opcode->bytecode (opcode-stx-name (insn-stx-op stx))))  
+  (define opcode (opcode->bytecode (opcode-stx-name (insn-stx-op stx))))
   (define arg1 (insn-stx-arg1 stx))
-  (define encoded-arg1 (when arg1 (encode-arg arg1 labels)))  
+  (define encoded-arg1 (when arg1 (encode-arg arg1 labels)))
   (define arg2 (insn-stx-arg2 stx))
   (define encoded-arg2 (when arg2 (encode-arg arg2 labels)))
   ;; Write encoded opcode and args
@@ -116,7 +117,7 @@
      (write-bytes (string->bytes/utf-8 "VMBC"))
      (write-bytes (integer->s16bytes (hash-ref labels "start" 0)))
      (for-each (λ (stx)
-		  (encode stx labels)) src))))
+                  (encode stx labels)) src))))
 
 
 ;; Compile from input port

@@ -2,8 +2,8 @@
 #lang racket/base
 
 (require racket/cmdline
-	 "../info.rkt"
-	 "core.rkt")
+         "../info.rkt"
+         "core.rkt")
 
 (define (show-version)
   (printf "VM Assembler v~a~%" vm-version)
@@ -31,5 +31,3 @@
     (lambda ()
       (write-bytes (compile-file filename))
       (values)))
-
-

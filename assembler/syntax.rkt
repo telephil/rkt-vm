@@ -10,18 +10,14 @@
  (struct-out ptr-stx)
  (struct-out number-stx))
 
-(struct label-stx (name)
-	#:inspector (make-inspector))
+(struct label-stx (name) #:inspector #f)
 
-(struct opcode-stx (name)
-	#:inspector (make-inspector))
+(struct opcode-stx (name) #:inspector #f)
 
-(struct register-stx (name)
-	#:inspector (make-inspector))
+(struct register-stx (name) #:inspector #f)
 
 (struct ptr-stx (register offset) #:inspector #f)
-(struct number-stx (value)
-	#:inspector (make-inspector))
 
-(struct insn-stx (op arg1 arg2)
-	#:inspector (make-inspector))
+(struct number-stx (value) #:inspector #f)
+
+(struct insn-stx (op arg1 arg2)	#:inspector #f)
