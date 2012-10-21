@@ -6,7 +6,7 @@ loop:   mul     -8(bp), 16(bp)
         dec     16(bp)
         jnz     loop
         mov     r0,     -8(bp)
-        add     sp,     8
+        mov     sp,     bp
         pop     bp
         ret
 start:  push    5
