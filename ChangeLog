@@ -1,5 +1,11 @@
 2012-10-21  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* assembler/parser.rkt (asm-parser): improved parser definition
+	and added ptr-stx args
+
+	* tests/test-asm-parser.rkt: added a test for lines starting with
+	a label
+
 	* assembler/lexer.rkt (asm-lexer): added open and close paren
 	tokens in order to enable ptr like syntax
 

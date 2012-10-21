@@ -73,38 +73,33 @@
     (s
      [(insn-list) (reverse $1)])
 
-    (insn [(LABEL) (label-stx $1)]
-          [(ID NEWLINE)
-           (begin
-             (check-opcode-stx $1 0 source-name $1-start-pos)
-             (insn-stx (opcode-stx $1) #f #f))]
-          [(ID ID NEWLINE) ;; match OPCODE LABEL-REF
-           (begin
-             (check-opcode-stx $1 1 source-name $1-start-pos)
-             (insn-stx (opcode-stx $1) (label-stx (symbol->string $2)) #f))]
-          [(ID NUMBER NEWLINE) ;; e.g. PUSH 42
-           (begin
-             (check-opcode-stx $1 1 source-name $1-start-pos)
-             (insn-stx (opcode-stx $1) (number-stx $2) #f))]
-          [(ID REGISTER NEWLINE)
-           (begin
-             (check-opcode-stx $1 1 source-name $1-start-pos)
-             (insn-stx (opcode-stx $1) (register-stx $2) #f))]
-          [(ID REGISTER COMMA NUMBER NEWLINE)
-           (begin
-             (check-opcode-stx $1 2 source-name $1-start-pos)
-             (insn-stx (opcode-stx $1)
-                       (register-stx $2)
-                       (number-stx $4)))]
-          [(ID REGISTER COMMA REGISTER NEWLINE)
-           (begin
-             (check-opcode-stx $1 2 source-name $1-start-pos)
-             (insn-stx (opcode-stx $1)
-                       (register-stx $2)
-                       (register-stx $4)))])
+    (arg
+     [(ID) (label-stx (symbol->string $1))] ;; TODO should be a LABEL-REF or sth
+     [(NUMBER) (number-stx $1)]
+     [(REGISTER) (register-stx $1)]
+     [(NUMBER OP REGISTER CP) (ptr-stx $3 $1)]
+     [(OP REGISTER CP) (ptr-stx $2 0)])
+
+    (insn
+     [(ID)
+      (begin
+        (check-opcode-stx $1 0 source-name $1-start-pos)
+        (insn-stx (opcode-stx $1) #f #f))]
+     [(ID arg)
+      (begin
+        (check-opcode-stx $1 1 source-name $1-start-pos)
+        (insn-stx (opcode-stx $1) $2 #f))]
+     [(ID arg COMMA arg)
+      (begin
+        (check-opcode-stx $1 2 source-name $1-start-pos)
+        (insn-stx (opcode-stx $1) $2 $4))])
+
+    (line
+     [(LABEL) (label-stx $1)]
+     [(insn NEWLINE) $1])
 
     (insn-list [() null]
-               [(insn-list insn) (cons $2 $1)]))))
+               [(insn-list line) (cons $2 $1)]))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Public parser API

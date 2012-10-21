@@ -9,6 +9,11 @@
 (check-exn exn:fail? (lambda () (parse-string "label:\n")))
 (check-exn exn:fail? (lambda () (parse-string "42\n")))
 
+
+;; Label and instruction
+(check-equal? (parse-string "l: ret\n")
+              (list (label-stx "l") (insn-stx (opcode-stx 'ret) #f #f)))
+
 ;; Simple instructions
 (check-equal? (parse-string "ret\n") (list (insn-stx (opcode-stx 'ret) #f #f)))
 
