@@ -15,11 +15,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; check that there's a whitespace or eof coming up in the input-port.
-(define (assert-delimiter-follows! lexeme ip)
+(define (assert-delimiter-follows! lexeme ip [extra #f])
   (define next-char (peek-char ip))
   (unless (or (eof-object? next-char)
               (char-whitespace? next-char)
-              (char=? next-char #\,))
+              (char=? next-char #\,)
+              (and extra (char=? next-char extra)))
     (define-values (line column position) (port-next-location ip))
     (raise-read-error (format "expected delimiter after ~e, got ~e"
                               lexeme (string next-char))
@@ -46,8 +47,8 @@
 
 ;; convert a lexeme to a token and check that the token is
 ;; immediately followed by a delimiter
-(define (lexeme->token/check-delimiter! lexeme ip token-fn convert-fn)
-  (assert-delimiter-follows! lexeme ip)
+(define (lexeme->token/check-delimiter! lexeme ip token-fn convert-fn [extra #f])
+  (assert-delimiter-follows! lexeme ip extra)
   (token-fn (convert-fn lexeme)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -56,7 +57,7 @@
 
 ;; Lexer tokens definition
 (define-tokens       data  (ID LABEL LABEL-REF REGISTER NUMBER))
-(define-empty-tokens delim (COMMA NEWLINE EOF))
+(define-empty-tokens delim (COMMA OP CP NEWLINE EOF))
 
 ;; Lexer abbreviations
 (define-lex-abbrevs
@@ -81,11 +82,14 @@
    [(eof) 'EOF]
    [(:or #\tab #\space) (return-without-pos (asm-lexer input-port))]
    [#\, 'COMMA]
+   [#\( 'OP]
+   [#\) 'CP]
    [#\newline 'NEWLINE]
    ;; Register
    [register
     (lexeme->token/check-delimiter! lexeme input-port
-                                    token-REGISTER lexeme->symbol)]
+                                    token-REGISTER lexeme->symbol
+                                    #\))]
    ;; ID
    [(:: alphabetic (:+ (:or alphabetic numeric)))
     (lexeme->token/check-delimiter! lexeme input-port token-ID lexeme->symbol)]
@@ -98,9 +102,10 @@
     (lexeme->token/check-delimiter! lexeme input-port
                                     token-NUMBER lexeme->number2)]
    ;; Decimal number
-   [(:+ digit)
+   [(:: (:* #\+ #\-) (:+ digit))
     (lexeme->token/check-delimiter! lexeme input-port
-                                    token-NUMBER lexeme->number10)]
+                                    token-NUMBER lexeme->number10
+                                    #\()]
    ;; Hexadecimal number
    [(:: "0x" (:+ digit16))
     (lexeme->token/check-delimiter! lexeme input-port

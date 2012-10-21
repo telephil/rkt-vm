@@ -1,5 +1,8 @@
 2012-10-21  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* assembler/lexer.rkt (asm-lexer): added open and close paren
+	tokens in order to enable ptr like syntax
+
 	* assembler/core.rkt (compute-label-addresses): rewritten to
 	compute addresses in one pass.
 	(encode-insn): changed a little for better readability

@@ -53,6 +53,8 @@
 
 ;; NUMBER tokens
 (check-equal? (collect-lexer-tokens "42") (list (token-NUMBER 42)))
+(check-equal? (collect-lexer-tokens "+42") (list (token-NUMBER 42)))
+(check-equal? (collect-lexer-tokens "-42") (list (token-NUMBER -42)))
 (check-equal? (collect-lexer-tokens "0000000042") (list (token-NUMBER 42)))
 (check-equal? (collect-lexer-tokens "101010b") (list (token-NUMBER 42)))
 (check-equal? (collect-lexer-tokens "00101010b") (list (token-NUMBER 42)))
@@ -61,3 +63,13 @@
 (check-equal? (collect-lexer-tokens "0xfF002A") (list (token-NUMBER 16711722)))
 (check-exn exn:fail? (lambda () (collect-lexer-tokens "42a")))
 (check-exn exn:fail? (lambda () (collect-lexer-tokens "0xG")))
+
+;; Compound forms
+(check-equal? (collect-lexer-tokens "-8(sp)")
+              (list (token-NUMBER -8) 'OP (token-REGISTER 'sp) 'CP))
+
+(check-equal? (collect-lexer-tokens "+24(bp)")
+              (list (token-NUMBER 24) 'OP (token-REGISTER 'bp) 'CP))
+
+(check-equal? (collect-lexer-tokens "(r0)")
+              (list 'OP (token-REGISTER 'r0) 'CP))
