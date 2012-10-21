@@ -2,12 +2,12 @@
 #lang racket/base
 
 (require racket/contract/base
-	 racket/match
-	 srfi/13 ;; for string-pad
-	 "registers.rkt"
-	 "memory.rkt"
-	 "opcodes.rkt"
-	 "../utils/bits.rkt")
+         racket/match
+         srfi/13 ;; for string-pad
+         "registers.rkt"
+         "memory.rkt"
+         "opcodes.rkt"
+         "../utils/bits.rkt")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Contract
@@ -47,6 +47,16 @@
   (ptr-add! ptr DWORD)
   op)
 
+(define (fetch-ptr mem ptr)
+  (define reg (load-byte mem (ptr)))
+  (ptr-add! ptr BYTE)
+  (define off (load-qword mem (ptr)))
+  (ptr-add! ptr QWORD)
+
+  (format "~a(~a)"
+          (if (= off 0) "" off)
+          (bytecode->register reg)))
+
 (define (fetch-reg mem ptr)
   (define bc (load-byte mem (ptr)))
   (ptr-add! ptr BYTE)
@@ -58,34 +68,32 @@
   (num->string bc))
 
 (define (fetch-arg op bit mem ptr)
+  (define reg? (bitwise-bit-set? op bit))
+  (define imm? (bitwise-bit-set? op (sub1 bit)))
   (cond
-   [(bitwise-bit-set? op bit) (fetch-reg mem ptr)]
-   [(bitwise-bit-set? op (sub1 bit)) (fetch-number mem ptr)]
+   [(and reg? imm?) (fetch-ptr mem ptr)]
+   [reg? (fetch-reg mem ptr)]
+   [imm? (fetch-number mem ptr)]
    [else #f]))
 
 (define (fetch-insn mem ptr)
   (define op (fetch-op mem ptr))
   (define arg1 (fetch-arg op 15 mem ptr))
   (define arg2 (fetch-arg op 13 mem ptr))
-  (list (clear-tags op)
-	arg1
-	arg2))
+  (list (clear-tags op) arg1 arg2))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Disassemble
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (disassemble start mem ptr)
   (define addr (ptr))
-  (match-define (list op arg1 arg2)
-		(fetch-insn mem ptr))
+  (match-define (list op arg1 arg2) (fetch-insn mem ptr))
   (if (= op END) #f
       (let ([res (string-append (if (= addr start) "* " "  ")
-				(addr->string addr)
-				": "
-				(op->string op)
-				" ")])
-	(when arg1
-	  (set! res (string-append res arg1)))
-	(when arg2
-	  (set! res (string-append res ", " arg2)))
-	res)))
+                                (addr->string addr)
+                                ": "
+                                (op->string op)
+                                " ")])
+        (when arg1 (set! res (string-append res arg1)))
+        (when arg2 (set! res (string-append res ", " arg2)))
+        res)))
