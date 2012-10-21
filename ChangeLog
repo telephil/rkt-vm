@@ -1,3 +1,7 @@
+2012-10-21  Philippe Mechaï  <philippe.mechai@gmail.com>
+
+	* assembler/syntax.rkt (ptr-stx): added definition of ptr syntax
+
 2012-10-20  Philippe Mechaï  <philippe.mechai@gmail.com>
 
 	* assembler/core.rkt (compute-offsets): improved compute-offsets

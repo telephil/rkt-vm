@@ -7,6 +7,7 @@
  (struct-out insn-stx)
  (struct-out opcode-stx)
  (struct-out register-stx)
+ (struct-out ptr-stx)
  (struct-out number-stx))
 
 (struct label-stx (name)
@@ -18,6 +19,7 @@
 (struct register-stx (name)
 	#:inspector (make-inspector))
 
+(struct ptr-stx (register offset) #:inspector #f)
 (struct number-stx (value)
 	#:inspector (make-inspector))
 
