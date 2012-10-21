@@ -32,7 +32,7 @@
    (register "sp" #x09)
    (register "bp" #x0A)
    (register "ip" #x0B)))
-    
+
 (define registers-by-symbol
   #hash((r0 . #x00)
         (r1 . #x01)

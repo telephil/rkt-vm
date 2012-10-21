@@ -55,4 +55,3 @@
 
 (define (load-byte dest idx)
   (bytes-ref dest idx))
-

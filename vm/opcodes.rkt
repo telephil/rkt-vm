@@ -10,7 +10,7 @@
  (NOP  integer?)
  (MOV  integer?)
  (AND  integer?)
- (OR   integer?) 
+ (OR   integer?)
  (XOR  integer?)
  (NOT  integer?)
  (SHL  integer?)
@@ -23,13 +23,13 @@
  (DEC  integer?)
  (CMP  integer?)
  (JMP  integer?)
- (JZ   integer?) 
+ (JZ   integer?)
  (JNZ  integer?)
- (JE   integer?) 
+ (JE   integer?)
  (JNE  integer?)
- (JG   integer?) 
+ (JG   integer?)
  (JGE  integer?)
- (JL   integer?) 
+ (JL   integer?)
  (JLE  integer?)
  (PUSH integer?)
  (POP  integer?)
@@ -128,7 +128,7 @@
   (for/hash ([op opcodes])
     (values (opcode-symbol op) op)))
 
-;; Hash of BYTECODE -> OPCODE 
+;; Hash of BYTECODE -> OPCODE
 (define opcode-by-bytecode
   (for/hash ([op opcodes])
     (values (opcode-bytecode op) op)))

@@ -1,11 +1,11 @@
 #lang racket/base
 
 (require racket/contract/base
-	 racket/match
-	 "memory.rkt"
-	 "registers.rkt"
-	 "opcodes.rkt"
-	 "../utils/bits.rkt")
+         racket/match
+         "memory.rkt"
+         "registers.rkt"
+         "opcodes.rkt"
+         "../utils/bits.rkt")
 
 (struct vm (memory registers flags))
 
@@ -34,7 +34,7 @@
 ;; VM Definition & Utils
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (create-vm memsize)
-  (current-vm 
+  (current-vm
    (vm (create-memory memsize)
        (for/vector ([i (in-range (register-count))])
          (make-parameter 0))
@@ -160,8 +160,8 @@
    [(inc)  (arg1 (add1 (arg1)))]
    [(dec)  (arg1 (sub1 (arg1))) (zf! arg1)]
    [(cmp)  (let ([res (make-parameter (- (arg1) (arg2)))])
-	     (zf! res)
-	     (sf! res))]
+             (zf! res)
+             (sf! res))]
    [(jmp)  (ip (arg1))]
    [(jz)   (when (zf?)   (ip (arg1)))]
    [(jnz)  (unless (zf?) (ip (arg1)))]
@@ -169,10 +169,10 @@
    [(jne)  (unless (zf?) (ip (arg1)))]
    [(jg)   (unless (sf?) (ip (arg1)))]
    [(jge)  (when (or (zf?) (not (sf?)))
-	     (ip (arg1)))]
+             (ip (arg1)))]
    [(jl)   (when (sf?) (ip (arg1)))]
    [(jle)  (when (or (zf?) (sf?))
-	     (ip (arg1)))]
+             (ip (arg1)))]
    [(push) (stack-push (arg1))]
    [(pop)  (arg1 (stack-pop))]
    [(call) (stack-push (ip)) (ip (arg1))]
@@ -181,18 +181,18 @@
 
 (define (step mem ip)
   (match-define (list op arg1 arg2)
-		(fetch-insn mem ip))
+                (fetch-insn mem ip))
   (execute op arg1 arg2 mem ip)
   op)
 
 (define (run)
   (define mem (vm-memory (current-vm)))
   (letrec ([iter (lambda ()
-		   (define result (step mem ip))
-		   (unless (= result END)
-		     (iter)))])
+                   (define result (step mem ip))
+                   (unless (= result END)
+                     (iter)))])
     (iter)))
-  
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Load
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
