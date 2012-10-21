@@ -24,32 +24,23 @@
    [(label-stx? stx) 8]
    [else 0]))
 
-(define (compute-offsets src)
-  (letrec ([loop (lambda (src acc offsets)
-                   (cond
-                    [(null? src)
-                     (list->vector (reverse offsets))]
-                    [(insn-stx? (car src))
-                     (define s (+ acc (arg-size (car src))))
-                     (loop (cdr src) s (cons s offsets))]
-                    [else
-                     (loop (cdr src) acc offsets)]))])
-    (loop src 0 '(0))))
-
+;; compute-label-addresses :
+;;  (listof (or/c label-stx? insn-stx?)) -> (hash string? integer?)
 (define (compute-label-addresses src)
-  (define offsets (compute-offsets src))
-  (letrec ([iter (λ (src idx h)
-                   (cond
-                     ([null? src] h)
-                     (else
-                      (define insn (car src))
-                      (if (label-stx? insn)
-                          (begin
-                            (hash-set! h (label-stx-name insn)
-                                       (vector-ref offsets idx))
-                            (iter (cdr src) idx h))
-                          (iter (cdr src) (add1 idx) h)))))])
-    (iter src 0 (make-hash))))
+  (letrec ([loop
+            (lambda (src acc offsets)
+              (if (null? src)
+                  (make-hash offsets)
+                  (match-let ([(list insn insns ...) src])
+                    (cond
+                     [(insn-stx? insn)
+                      (define s (+ acc (arg-size insn)))
+                      (loop insns s offsets)]
+                     [(label-stx? insn)
+                      (loop insns acc (cons (cons (label-stx-name insn) acc)
+                                            offsets))]))))])
+    (loop src 0 '())))
+
 
 (define (integer->s16bytes n)
   (integer->integer-bytes n 2 #t (system-big-endian?)))
