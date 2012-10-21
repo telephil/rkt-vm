@@ -1,11 +1,11 @@
 #lang racket/base
 
 (require racket/port
-	 rackunit
+         rackunit
          parser-tools/lex)
 
 (require/expose "../assembler/lexer.rkt"
-		(asm-lexer token-ID token-LABEL token-REGISTER token-NUMBER))
+                (asm-lexer token-ID token-LABEL token-REGISTER token-NUMBER))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Lexer tests utils

@@ -1,7 +1,7 @@
 #lang racket/base
 
 (require rackunit
-	 "../vm/memory.rkt")
+         "../vm/memory.rkt")
 
 ;; creation
 (check-equal? (create-memory 4) (bytes 0 0 0 0))

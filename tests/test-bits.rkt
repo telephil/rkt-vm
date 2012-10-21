@@ -1,7 +1,7 @@
 #lang racket/base
 
 (require rackunit
-	 "../utils/bits.rkt")
+         "../utils/bits.rkt")
 
 ;; tag
 (check-= (tag 0 0) 1 0)
@@ -18,4 +18,3 @@
 (check-= (clear-tags (tag 14 1)) 1 0)
 (check-= (clear-tags (tag 13 1)) 1 0)
 (check-= (clear-tags (tag 12 1)) 1 0)
-
