@@ -4,6 +4,7 @@
          racket/bool
          racket/list
          racket/port
+         racket/match
          "parser.rkt"
          "syntax.rkt"
          "../vm/registers.rkt"
@@ -22,6 +23,7 @@
                        (arg-size (insn-stx-arg1 stx))
                        (arg-size (insn-stx-arg2 stx)))]
    [(register-stx? stx) 1]
+   [(ptr-stx? stx) (+ 1 8)] ;; register + number (offset)
    [(number-stx? stx) 8]
    [(label-stx? stx) 8]
    [else 0]))
@@ -68,26 +70,34 @@
 (define (encode-register stx)
   (bytes (register->bytecode (register-stx-name stx))))
 
+;; encode-ptr : ptr-stx? -> bytes?
+(define (encode-ptr stx)
+  (bytes-append
+   (bytes (register->bytecode (ptr-stx-register stx)))
+   (integer->s64bytes (ptr-stx-offset stx))))
+
 ;; encode-arg : (or/c register-stx? number-stx? label-stx?) -> bytes?
 (define (encode-arg arg labels)
   (cond
-    [(register-stx? arg)
-     (encode-register arg)]
-    [(number-stx? arg)
-     (integer->s64bytes (number-stx-value arg))]
-    [(label-stx? arg)
-     (define addr (hash-ref labels (label-stx-name arg)))
-     (integer->s64bytes addr)]))
+   [(ptr-stx? arg)
+    (encode-ptr arg)]
+   [(register-stx? arg)
+    (encode-register arg)]
+   [(number-stx? arg)
+    (integer->s64bytes (number-stx-value arg))]
+   [(label-stx? arg)
+    (define addr (hash-ref labels (label-stx-name arg)))
+    (integer->s64bytes addr)]))
 
 ;; tag-arg : integer? (or/c register-stx? number-stx? label-stx?) -> integer?
 (define (tag-arg opcode arg bit)
   (cond
-    [(register-stx? arg)
-     (tag bit opcode)]
-    [(number-stx? arg)
-     (tag (sub1 bit) opcode)]
-    [(label-stx? arg)
-     (tag (sub1 bit) opcode)]))
+   [(ptr-stx? arg)
+    (foldl tag opcode (list bit (sub1 bit)))]
+   [(register-stx? arg)
+    (tag bit opcode)]
+   [(or (number-stx? arg) (label-stx? arg))
+    (tag (sub1 bit) opcode)]))
 
 ;; encode-opcode : integer? (or/c stx? #f) (or/c stx #f) -> integer?
 (define (encode-opcode opcode arg1 arg2)

@@ -1,5 +1,7 @@
 2012-10-21  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* assembler/core.rkt (encode-arg): added encoding of ptr-stx args
+
 	* assembler/parser.rkt (asm-parser): improved parser definition
 	and added ptr-stx args
 
