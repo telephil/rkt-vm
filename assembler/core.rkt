@@ -14,6 +14,8 @@
  [compile-string (string? . -> . bytes?)]
  [compile-file (string? . -> . bytes?)])
 
+;; arg-size :
+;;  (or/c insn-stx? register-stx? number-stx? label-stx?) -> integer?
 (define (arg-size stx)
   (cond
    [(insn-stx? stx) (+ 4 ;; = opcode size = 32 bits
@@ -41,19 +43,32 @@
                                             offsets))]))))])
     (loop src 0 '())))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Integer conversion functions
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; integer->s16bytes : integer? -> bytes?
 (define (integer->s16bytes n)
   (integer->integer-bytes n 2 #t (system-big-endian?)))
 
+;; integer->s32bytes : integer? -> bytes?
 (define (integer->s32bytes n)
   (integer->integer-bytes n 4 #t (system-big-endian?)))
 
+;; integer->s64bytes : integer? -> bytes?
 (define (integer->s64bytes n)
   (integer->integer-bytes n 8 #t (system-big-endian?)))
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; encoding
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; encode-register : register-stx? -> bytes?
 (define (encode-register stx)
   (bytes (register->bytecode (register-stx-name stx))))
 
+;; encode-arg : (or/c register-stx? number-stx? label-stx?) -> bytes?
 (define (encode-arg arg labels)
   (cond
     [(register-stx? arg)
@@ -64,6 +79,7 @@
      (define addr (hash-ref labels (label-stx-name arg)))
      (integer->s64bytes addr)]))
 
+;; tag-arg : integer? (or/c register-stx? number-stx? label-stx?) -> integer?
 (define (tag-arg opcode arg bit)
   (cond
     [(register-stx? arg)
@@ -73,11 +89,13 @@
     [(label-stx? arg)
      (tag (sub1 bit) opcode)]))
 
+;; encode-opcode : integer? (or/c stx? #f) (or/c stx #f) -> integer?
 (define (encode-opcode opcode arg1 arg2)
   (when arg1 (set! opcode (tag-arg opcode arg1 15)))
   (when arg2 (set! opcode (tag-arg opcode arg2 13)))
   opcode)
 
+;; encode-insn : insn-stx? (hash string? integer?) -> bytes?
 (define (encode-insn stx labels)
   (define opcode (opcode->bytecode (opcode-stx-name (insn-stx-op stx))))
   (define arg1 (insn-stx-arg1 stx))
@@ -91,6 +109,7 @@
   (unless (void? encoded-arg2)
     (write-bytes encoded-arg2)))
 
+;; encode : stx? (hash string? integer?)
 (define (encode stx labels)
   (when (insn-stx? stx)
     (encode-insn stx labels)))
