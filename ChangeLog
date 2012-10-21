@@ -2,6 +2,7 @@
 
 	* assembler/core.rkt (compute-label-addresses): rewritten to
 	compute addresses in one pass.
+	(encode-insn): changed a little for better readability
 
 	* assembler/syntax.rkt (ptr-stx): added definition of ptr syntax
 

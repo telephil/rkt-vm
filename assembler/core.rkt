@@ -99,14 +99,14 @@
 (define (encode-insn stx labels)
   (define opcode (opcode->bytecode (opcode-stx-name (insn-stx-op stx))))
   (define arg1 (insn-stx-arg1 stx))
-  (define encoded-arg1 (when arg1 (encode-arg arg1 labels)))
+  (define encoded-arg1 (if arg1 (encode-arg arg1 labels) #f))
   (define arg2 (insn-stx-arg2 stx))
-  (define encoded-arg2 (when arg2 (encode-arg arg2 labels)))
+  (define encoded-arg2 (if arg2 (encode-arg arg2 labels) #f))
   ;; Write encoded opcode and args
   (write-bytes (integer->s32bytes (encode-opcode opcode arg1 arg2)))
-  (unless (void? encoded-arg1)
+  (when encoded-arg1
     (write-bytes encoded-arg1))
-  (unless (void? encoded-arg2)
+  (when encoded-arg2
     (write-bytes encoded-arg2)))
 
 ;; encode : stx? (hash string? integer?)
