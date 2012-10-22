@@ -74,13 +74,15 @@
 
   [digit (:/ "0" "9")]
   [digit2 (:/ "0" "1")]
-  [digit16 (:/ "af" "AF" "09")])
+  [digit16 (:/ "af" "AF" "09")]
+  [comment (:: #\; (:* (:~ #\newline)) #\newline)]
+)
 
 ;; Lexer
 (define asm-lexer
   (lexer-src-pos
    [(eof) 'EOF]
-   [(:or #\tab #\space) (return-without-pos (asm-lexer input-port))]
+   [(:or #\tab #\space comment) (return-without-pos (asm-lexer input-port))]
    [#\, 'COMMA]
    [#\( 'OP]
    [#\) 'CP]
