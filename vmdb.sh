@@ -1,3 +1,5 @@
 #!/bin/sh
 
-exec racket -t debugger/vmdb.rkt -- $@
+BASEDIR=$(dirname $0)
+
+exec racket -t $BASEDIR/debugger/vmdb.rkt -- $@

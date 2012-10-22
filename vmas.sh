@@ -1,3 +1,5 @@
 #!/bin/sh
 
-exec racket -t assembler/vmas.rkt -- $@
+BASEDIR=$(dirname $0)
+
+exec racket -t $BASEDIR/assembler/vmas.rkt -- $@

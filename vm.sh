@@ -1,3 +1,5 @@
 #!/bin/sh
 
-exec racket -t vm/vm.rkt -- $@
+BASEDIR=$(dirname $0)
+
+exec racket -t $BASEDIR/vm/vm.rkt -- $@
