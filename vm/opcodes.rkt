@@ -35,6 +35,7 @@
  (POP  integer?)
  (CALL integer?)
  (RET  integer?)
+ (SYSCALL integer?)
  (END  integer?))
 
 ;; Return the opcode for the given OP
@@ -88,6 +89,7 @@
 (define POP  #x19)
 (define CALL #x1A)
 (define RET  #x1B)
+(define SYSCALL #xFE)
 (define END  #xFF)
 
 ;; List of opcodes
@@ -121,6 +123,7 @@
    (opcode 'pop  POP  1)
    (opcode 'call CALL 1)
    (opcode 'ret  RET  0)
+   (opcode 'syscall SYSCALL 0)
    (opcode 'end  END  0)))
 
 ;; Hash of SYMBOL -> OPCODE

@@ -3,6 +3,7 @@
 (require racket/contract/base
          racket/match
          racket/function
+         racket/include
          "memory.rkt"
          "registers.rkt"
          "opcodes.rkt"
@@ -28,6 +29,9 @@
 ;; Globals
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define current-vm (make-parameter null))
+(define r0 #f)
+(define r1 #f)
+(define r2 #f)
 (define ip #f)
 (define bp #f)
 (define sp #f)
@@ -47,6 +51,9 @@
   (vector-ref (vm-registers (current-vm)) (register->bytecode name)))
 
 (define (initialize-registers start)
+  (set! r0 (get-vm-register 'r0))
+  (set! r1 (get-vm-register 'r1))
+  (set! r2 (get-vm-register 'r2))
   (set! ip (get-vm-register 'ip))
   (set! sp (get-vm-register 'sp))
   (set! bp (get-vm-register 'bp))
@@ -125,6 +132,10 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Program execution
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; syscalls
+(include "syscalls.rkt")
+
 (define (execute op arg1 arg2 mem ip)
   ;(printf "(debug) ~a ~a ~a (ip = ~a)~%" (opcode->symbol op) (if arg1 (arg1) #f) (if arg2 (arg2) #f) (ip))
   (case (opcode->symbol op)
@@ -160,6 +171,7 @@
    [(pop)  (arg1 (stack-pop))]
    [(call) (stack-push (ip)) (ip (arg1))]
    [(ret)  (ip (stack-pop))]
+   [(syscall) (syscall)]
    [(end)  (values)]))
 
 (define (step mem ip)
