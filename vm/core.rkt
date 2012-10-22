@@ -2,9 +2,11 @@
 
 (require racket/contract/base
          racket/match
+         racket/function
          "memory.rkt"
          "registers.rkt"
          "opcodes.rkt"
+         "fetch.rkt"
          "../utils/ptr.rkt"
          "../utils/bits.rkt")
 
@@ -87,6 +89,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Stack operations
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(define QWORD 8)
+
 (define (stack-push arg)
   (define mem (vm-memory (current-vm)))
   (define sp (get-vm-register 'sp))
@@ -103,50 +107,22 @@
   val)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Memory access
+;; Instruction fetching
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define BYTE  1)
-(define WORD  2)
-(define DWORD 4)
-(define QWORD 8)
 
-(define (ptr-add! ptr sz)
-  (ptr (+ sz (ptr))))
+(define (reg-trans reg)
+  (vector-ref (vm-registers (current-vm)) reg))
 
-(define (fetch-op mem ptr)
-  (define op (load-dword mem (ptr)))
-  (ptr-add! ptr DWORD)
-  op)
+(define (ptr-trans mem)
+  (lambda (reg off)
+    (make-collection-ptr mem (+ ((reg-trans reg)) off) load-qword store-qword)))
 
-(define (fetch-ptr mem ptr)
-  (define reg (fetch-reg mem ptr))
-  (define off (fetch-number mem ptr))
-  (make-collection-ptr mem (+ (reg) (off)) load-qword store-qword))
+(define (fetch-instruction mem ptr)
+  (parameterize ([register-bytecode-transformer reg-trans]
+                 [number-bytecode-transformer make-parameter]
+                 [ptr-bytecode-transformer (ptr-trans mem)])
+    (fetch-insn mem ptr)))
 
-(define (fetch-reg mem ptr)
-  (define bc (load-byte mem (ptr)))
-  (ptr-add! ptr BYTE)
-  (vector-ref (vm-registers (current-vm)) bc))
-
-(define (fetch-number mem ptr)
-  (define bc (load-qword mem (ptr)))
-  (ptr-add! ptr QWORD)
-  (make-parameter bc))
-
-(define (fetch-arg op bit mem ptr)
-  (define reg? (bitwise-bit-set? op bit))
-  (define imm? (bitwise-bit-set? op (sub1 bit)))
-  (cond
-   [(and reg? imm?) (fetch-ptr mem ptr)]
-   [reg? (fetch-reg mem ptr)]
-   [imm? (fetch-number mem ptr)]
-   [else #f]))
-
-(define (fetch-insn mem ptr)
-  (define op (fetch-op mem ptr))
-  (define arg1 (fetch-arg op 15 mem ptr))
-  (define arg2 (fetch-arg op 13 mem ptr))
-  (list (clear-tags op) arg1 arg2))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Program execution
@@ -190,7 +166,7 @@
 
 (define (step mem ip)
   (match-define (list op arg1 arg2)
-                (fetch-insn mem ip))
+                (fetch-instruction mem ip))
   (execute op arg1 arg2 mem ip)
   op)
 
