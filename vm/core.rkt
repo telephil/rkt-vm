@@ -62,16 +62,14 @@
 (define SF_BIT 2)
 
 (define (flag-set? bit)
-  (define flags (vm-flags (current-vm)))
   (bitwise-bit-set? (flags) bit))
 
 (define (flag-clear! bit)
-  (when (flag-set? bit)
-    (flags (bitwise-and (flags) (bitwise-not (arithmetic-shift 1 bit))))))
+  (flags (untag bit (flags))))
 
 (define (flag-set! bit predicate arg)
   (if (predicate (arg))
-      (flags (bitwise-ior (flags) (arithmetic-shift 1 bit)))
+      (flags (tag bit (flags)))
       (flag-clear! bit)))
 
 (define (zf?)
