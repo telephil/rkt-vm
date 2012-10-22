@@ -15,8 +15,8 @@
 (provide/contract
  [vm? (any/c . -> . boolean?)]
  [current-vm (parameter/c vm?)]
- [create-vm (integer? . -> . void)]
- [load-file (string? . -> . void)]
+ [init (integer? . -> . void)]
+ [load (string? . -> . void)]
  [run (-> void)]
  [step (bytes? (parameter/c integer?) . -> . void)]
  [print-registers (integer? . -> . void)]
@@ -36,7 +36,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; VM Definition & Utils
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define (create-vm memsize)
+(define (init memsize)
   (current-vm
    (vm (create-memory memsize)
        (for/vector ([i (in-range (register-count))])
@@ -205,7 +205,7 @@
   (initialize-registers start))
 
 ;; Load a compiled program from filename
-(define (load-file filename)
+(define (load filename)
   (with-input-from-file filename read-program))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

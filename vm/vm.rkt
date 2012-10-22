@@ -5,7 +5,7 @@
          racket/path
          syntax/location
          setup/getinfo
-         "core.rkt")
+         (prefix-in vm: "core.rkt"))
 
 (define info (get-info/full
               (simplify-path (build-path (path-only (quote-module-path)) 'up))))
@@ -32,9 +32,9 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Main
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(create-vm (memsize))
-(load-file filename)
-(run)
+(vm:init (memsize))
+(vm:load filename)
+(vm:run)
 (when (dumpregs?)
-  (print-registers 10))
+  (vm:print-registers 10))
 (values)

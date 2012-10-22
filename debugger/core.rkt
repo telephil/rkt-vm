@@ -6,7 +6,7 @@
 	 readline/readline
 	 "command.rkt"
 	 "breakpoints.rkt"
-	 "../vm/core.rkt"
+	 (prefix-in vm: "../vm/core.rkt")
 	 "../vm/registers.rkt"
 	 "../vm/opcodes.rkt"
 	 "../vm/disassembler.rkt"
@@ -41,7 +41,7 @@
 (define (do-load filename)
   (unless (file-exists? filename)
     (raise-user-error (format "load: could not find file ~a" filename)))
-  (load-file filename)
+  (vm:load filename)
   (set! ip (get-vm-register 'ip))
   (set! bp (get-vm-register 'bp))
   (set! sp (get-vm-register 'sp))
@@ -257,7 +257,7 @@
 (define (run-debugger memsize)
   (register-commands)
   (load-history (history-filename))
-  (create-vm (memsize))
+  (vm:init (memsize))
   (cli)
   (save-history (history-filename))
   (printf "Bye.~%")
