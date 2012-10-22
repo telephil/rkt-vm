@@ -1,5 +1,11 @@
 2012-10-22  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* vm/memory.rkt: added load and store function that also increase
+	parameter value
+
+	* tests/test-memory.rkt: added test for new load and store
+	functions
+
 	* vm/disassembler.rkt (disassemble): use tabs instead of padding
 
 2012-10-21  Philippe Mechaï  <philippe.mechai@gmail.com>

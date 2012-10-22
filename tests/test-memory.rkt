@@ -26,3 +26,15 @@
 (check-equal? (test-store 8 store-dword 0 255) (bytes 255 0 0 0 0 0 0 0))
 (check-equal? (test-store 8 store-dword 4 1024) (bytes 0 0 0 0 0 4 0 0))
 (check-exn exn:fail? (lambda () (test-store 8 store-dword 10 1)))
+
+;; fwd! functions
+(define (test-load/fwd! op)
+  (define memory (create-memory 16))
+  (define ptr (make-parameter 0))
+  (op memory ptr)
+  (ptr))
+
+(check-equal? (test-load/fwd! load-byte/fwd!) 1)
+(check-equal? (test-load/fwd! load-word/fwd!) 2)
+(check-equal? (test-load/fwd! load-dword/fwd!) 4)
+(check-equal? (test-load/fwd! load-qword/fwd!) 8)
