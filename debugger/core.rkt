@@ -3,23 +3,15 @@
 
 (require racket/match
          racket/string
-         readline/readline
+         "cli.rkt"
          "command.rkt"
          "breakpoints.rkt"
          (prefix-in vm: "../vm/core.rkt")
          "../vm/registers.rkt"
          "../vm/opcodes.rkt"
-         "../vm/disassembler.rkt"
-         "../utils/readline.rkt")
+         "../vm/disassembler.rkt")
 
 (provide run-debugger)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; readline history filename
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define (history-filename)
-  (define homedir (find-system-path 'home-dir))
-  (path->string (build-path homedir ".vmdb_history")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; global vars
@@ -42,13 +34,13 @@
   (unless (file-exists? filename)
     (raise-user-error (format "load: could not find file ~a" filename)))
   (vm:load filename)
-  (set! ip (get-vm-register 'ip))
-  (set! bp (get-vm-register 'bp))
-  (set! sp (get-vm-register 'sp))
+  (set! ip (vm:get-vm-register 'ip))
+  (set! bp (vm:get-vm-register 'bp))
+  (set! sp (vm:get-vm-register 'sp))
   (set! ip0 (ip))
   (set! bp0 (bp))
   (set! sp0 (sp))
-  (set! mem (vm-memory (current-vm)))
+  (set! mem (vm:vm-memory (vm:current-vm)))
   (program-loaded #t))
 
 (define (rerun?)
@@ -70,7 +62,7 @@
 (define (continue)
   (letrec ([iter
             (lambda ()
-              (define result (step mem ip))
+              (define result (vm:step mem ip))
               (cond
                [(breakpoint-at? (ip))
                 (printf "Breakpoint reached at 0x~a~%" (number->string (ip) 16))]
@@ -100,11 +92,11 @@
   (cond
    [(or (string=? what "registers")
         (string=? what "regs"))
-    (print-registers radix)]
+    (vm:print-registers radix)]
    [else
     (define bc (register->bytecode (string->symbol what)))
     (if bc
-        (print-register bc radix)
+        (vm:print-register bc radix)
         (raise-user-error (format "~a: unknown register ~a" name what)))]))
 
 
@@ -155,7 +147,7 @@
                     0 0
                     #t #t
                     "- execute next instruction and stop"
-                    (lambda (args) (step mem ip)))
+                    (lambda (args) (vm:step mem ip)))
 
   (register-command "break" "b"
                     1 1
@@ -225,40 +217,49 @@
                     "- binary output version of print"
                     (lambda (args) (do-print (car args) 2))))
 
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ;; CLI
+;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (define (handle-line line)
+;;   (match-define (list-rest cmd args)
+;;                 (string-split line " "))
+;;   ())
+
+;; (define (read-one-line)
+;;   (define line (readline "vmdb> "))
+;;   (when (string? line)
+;;     (with-handlers ([exn:fail:user?
+;;                      (lambda (e) (eprintf "error: ~a~%" (exn-message e)))])
+;;       (let ([res (handle-line (string-trim line " " #:repeat? #t))])
+;;         (when res
+;;           (add-history line))
+;;         res))))
+
+;; (define (cli)
+;;   (letrec ([loop (lambda ()
+;;                    (unless (eq? 'quit (read-one-line))
+;;                      (loop)))])
+;;     (loop)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; CLI
+;; readline history filename
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(define (handle-line line)
-  (match-define (list-rest cmd args)
-                (string-split line " "))
-  (invoke-command cmd args (program-loaded) (program-running)))
-
-(define (read-one-line)
-  (define line (readline "vmdb> "))
-  (when (string? line)
-    (with-handlers ([exn:fail:user?
-                     (lambda (e) (eprintf "error: ~a~%" (exn-message e)))])
-      (let ([res (handle-line (string-trim line " " #:repeat? #t))])
-        (when res
-          (add-history line))
-        res))))
-
-(define (cli)
-  (letrec ([loop (lambda ()
-                   (unless (eq? 'quit (read-one-line))
-                     (loop)))])
-    (loop)))
-
+(define (history-filename)
+  (define homedir (find-system-path 'home-dir))
+  (path->string (build-path homedir ".vmdb_history")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Debugger entry point
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (run-debugger memsize)
   (register-commands)
-  (load-history (history-filename))
   (vm:init (memsize))
-  (cli)
-  (save-history (history-filename))
+  (cli #:handler (lambda (cmd args) (invoke-command cmd args
+                                               (program-loaded)
+                                               (program-running)))
+       #:stop 'quit
+       #:prompt "vmdb> "
+       #:history (history-filename))
   (printf "Bye.~%")
   (values))
