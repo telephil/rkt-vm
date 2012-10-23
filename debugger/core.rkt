@@ -2,15 +2,15 @@
 #lang at-exp racket/base
 
 (require racket/match
-	 racket/string
-	 readline/readline
-	 "command.rkt"
-	 "breakpoints.rkt"
-	 (prefix-in vm: "../vm/core.rkt")
-	 "../vm/registers.rkt"
-	 "../vm/opcodes.rkt"
-	 "../vm/disassembler.rkt"
-	 "../utils/readline.rkt")
+         racket/string
+         readline/readline
+         "command.rkt"
+         "breakpoints.rkt"
+         (prefix-in vm: "../vm/core.rkt")
+         "../vm/registers.rkt"
+         "../vm/opcodes.rkt"
+         "../vm/disassembler.rkt"
+         "../utils/readline.rkt")
 
 (provide run-debugger)
 
@@ -55,12 +55,12 @@
   (eprintf "Program is already running. Start again? ")
   (let ([l (read-line)])
     (and (string? l)
-	 (or (string-ci=? "y" l)
-	     (string-ci=? "yes" l)))))
+         (or (string-ci=? "y" l)
+             (string-ci=? "yes" l)))))
 
 (define (dbg-run)
   (when (or (not (program-running))
-	    (and (program-running) (rerun?)))
+            (and (program-running) (rerun?)))
     (program-running #t)
     (ip ip0)
     (bp bp0)
@@ -69,43 +69,43 @@
 
 (define (continue)
   (letrec ([iter
-	    (lambda ()
-	      (define result (step mem ip))
-	      (cond
-	       [(breakpoint-at? (ip))
-		(printf "Breakpoint reached at 0x~a~%" (number->string (ip) 16))]
-	       [(= result END)
-		(printf "Program terminated.~%")
-		(program-running #f)]
-	       [else (iter)]))])
+            (lambda ()
+              (define result (step mem ip))
+              (cond
+               [(breakpoint-at? (ip))
+                (printf "Breakpoint reached at 0x~a~%" (number->string (ip) 16))]
+               [(= result END)
+                (printf "Program terminated.~%")
+                (program-running #f)]
+               [else (iter)]))])
     (iter)))
 
 (define (disasm)
   (define ptr (make-parameter 0))
   (letrec ([loop
-	    (lambda ()
-	      (define line (disassemble ip0 mem ptr))
-	      (when line
-		(displayln line)
-		(loop)))])
+            (lambda ()
+              (define line (disassemble ip0 mem ptr))
+              (when line
+                (displayln line)
+                (loop)))])
     (loop))
   (printf "~%"))
 
 
 (define (do-print what [radix 10])
   (define name (case radix
-		 [(10) "print"]
-		 [(16) "print/x"]
-		 [(2)  "print/b"]))
+                 [(10) "print"]
+                 [(16) "print/x"]
+                 [(2)  "print/b"]))
   (cond
    [(or (string=? what "registers")
-	(string=? what "regs"))
+        (string=? what "regs"))
     (print-registers radix)]
    [else
     (define bc (register->bytecode (string->symbol what)))
     (if bc
-	(print-register bc radix)
-	(raise-user-error (format "~a: unknown register ~a" name what)))]))
+        (print-register bc radix)
+        (raise-user-error (format "~a: unknown register ~a" name what)))]))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -116,114 +116,114 @@
 ;; Register commands
 (define (register-commands)
   (register-command "quit" "q"
-		    0 0
-		    #f #f
-		    "- quits the debugger"
-		    (lambda (args) 'quit))
+                    0 0
+                    #f #f
+                    "- quits the debugger"
+                    (lambda (args) 'quit))
 
   (register-command "help" "h"
-		    0 0
-		    #f #f
-		    "- show this help page"
-		    (lambda (args) (displayln commands-help)))
+                    0 0
+                    #f #f
+                    "- show this help page"
+                    (lambda (args) (displayln commands-help)))
 
   (register-command "load" "l"
-		    1 1
-		    #f #f
-		    "<file> - load bytecode from file"
-		    (lambda (args) (do-load (car args))))
+                    1 1
+                    #f #f
+                    "<file> - load bytecode from file"
+                    (lambda (args) (do-load (car args))))
 
   (register-command "disasm" "d"
-		    0 0
-		    #t #f
-		    "- disassemble loaded program"
-		    (lambda (args) (disasm)))
+                    0 0
+                    #t #f
+                    "- disassemble loaded program"
+                    (lambda (args) (disasm)))
 
   (register-command "run" "r"
-		    0 0
-		    #t #f
-		    "- run program loaded through load"
-		    (lambda (args) (dbg-run)))
+                    0 0
+                    #t #f
+                    "- run program loaded through load"
+                    (lambda (args) (dbg-run)))
 
   (register-command "cont" "c"
-		    0 0
-		    #t #t
-		    "- continue program execution"
-		    (lambda (args) (continue)))
+                    0 0
+                    #t #t
+                    "- continue program execution"
+                    (lambda (args) (continue)))
 
   (register-command "step" "s"
-		    0 0
-		    #t #t
-		    "- execute next instruction and stop"
-		    (lambda (args) (step mem ip)))
+                    0 0
+                    #t #t
+                    "- execute next instruction and stop"
+                    (lambda (args) (step mem ip)))
 
   (register-command "break" "b"
-		    1 1
-		    #f #f
-		    "<address> - break execution of program at address"
-		    (lambda (args) (add-breakpoint (string->number (car args) 16))))
+                    1 1
+                    #f #f
+                    "<address> - break execution of program at address"
+                    (lambda (args) (add-breakpoint (string->number (car args) 16))))
 
   (register-command "list-breakpoints" "lb"
-		    0 0
-		    #f #f
-		    "- list current breakpoints"
-		    (lambda (args) 
-		      (printf "Breakpoints:~%")
-		      (for-each (lambda (brk) 
-				  (printf "@ 0x~a (~a)~%"
-					  (number->string (car brk) 16)
-					  (or (and (cdr brk) "enabled") "disabled")))
-				(list-breakpoints))))
+                    0 0
+                    #f #f
+                    "- list current breakpoints"
+                    (lambda (args)
+                      (printf "Breakpoints:~%")
+                      (for-each (lambda (brk)
+                                  (printf "@ 0x~a (~a)~%"
+                                          (number->string (car brk) 16)
+                                          (or (and (cdr brk) "enabled") "disabled")))
+                                (list-breakpoints))))
 
   (register-command "enable-breakpoint" "eb"
-		    1 1
-		    #f #f
-		    "<address> - enable previously defined breakpoint"
-		    (lambda (args) (enable-breakpoint (string->number (car args) 16))))
-  
+                    1 1
+                    #f #f
+                    "<address> - enable previously defined breakpoint"
+                    (lambda (args) (enable-breakpoint (string->number (car args) 16))))
+
   (register-command "enable-breakpoints" "ebs"
-		    0 0
-		    #f #f
-		    "- enable all previously defined breakpoints"
-		    (lambda (args) (enable-breakpoints)))
+                    0 0
+                    #f #f
+                    "- enable all previously defined breakpoints"
+                    (lambda (args) (enable-breakpoints)))
 
   (register-command "disable-breakpoint" "db"
-		    1 1
-		    #f #f
-		    "<address> - disable previously defined breakpoint"
-		    (lambda (args) (disable-breakpoint (string->number (car args) 16))))
-  
+                    1 1
+                    #f #f
+                    "<address> - disable previously defined breakpoint"
+                    (lambda (args) (disable-breakpoint (string->number (car args) 16))))
+
   (register-command "disable-breakpoints" "dbs"
-		    0 0
-		    #f #f
-		    "- disable all previously defined breakpoints"
-		    (lambda (args) (disable-breakpoints)))
-  
+                    0 0
+                    #f #f
+                    "- disable all previously defined breakpoints"
+                    (lambda (args) (disable-breakpoints)))
+
   (register-command "remove-breakpoint" "rb"
-		    1 1
-		    #f #f
-		    "<address> - remove previously defined breakpoint"
-		    (lambda (args) (remove-breakpoint (string->number (car args) 16))))
+                    1 1
+                    #f #f
+                    "<address> - remove previously defined breakpoint"
+                    (lambda (args) (remove-breakpoint (string->number (car args) 16))))
 
   (register-command "print" "p"
-		    1 1
-		    #t #f
-		    @S{registers - print all registers
+                    1 1
+                    #t #f
+                    @S{registers - print all registers
 				   regs - print all registers
 				   <register> - print register value}
-		    (lambda (args) (do-print (car args))))
+                    (lambda (args) (do-print (car args))))
 
   (register-command "print/x" "p/x"
-		    1 1
-		    #t #f
-		    "- hexadecimal output version of print"
-		    (lambda (args) (do-print (car args) 16)))
+                    1 1
+                    #t #f
+                    "- hexadecimal output version of print"
+                    (lambda (args) (do-print (car args) 16)))
 
   (register-command "print/b" "p/b"
-		    1 1
-		    #t #f
-		    "- binary output version of print"
-		    (lambda (args) (do-print (car args) 2))))
+                    1 1
+                    #t #f
+                    "- binary output version of print"
+                    (lambda (args) (do-print (car args) 2))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CLI
@@ -231,23 +231,23 @@
 
 (define (handle-line line)
   (match-define (list-rest cmd args)
-		(string-split line " "))
+                (string-split line " "))
   (invoke-command cmd args (program-loaded) (program-running)))
 
 (define (read-one-line)
   (define line (readline "vmdb> "))
   (when (string? line)
     (with-handlers ([exn:fail:user?
-		     (lambda (e) (eprintf "error: ~a~%" (exn-message e)))])
+                     (lambda (e) (eprintf "error: ~a~%" (exn-message e)))])
       (let ([res (handle-line (string-trim line " " #:repeat? #t))])
-	(when res
-	    (add-history line))
-	res))))
+        (when res
+          (add-history line))
+        res))))
 
 (define (cli)
-  (letrec ([loop (lambda () 
-		   (unless (eq? 'quit (read-one-line))
-		     (loop)))])
+  (letrec ([loop (lambda ()
+                   (unless (eq? 'quit (read-one-line))
+                     (loop)))])
     (loop)))
 
 

@@ -18,7 +18,7 @@
 
 (define (list-breakpoints)
   (sort (for/list ([(k v) (in-hash breakpoints)])
-	  (cons k v)) < #:key car))
+          (cons k v)) < #:key car))
 
 ;; Add a breakpoint for the given address
 (define (add-breakpoint addr)
@@ -48,4 +48,3 @@
 ;; that is: a breakpoint exists and is enabled
 (define (breakpoint-at? addr)
   (hash-ref breakpoints addr #f))
-
