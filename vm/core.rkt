@@ -4,6 +4,7 @@
          racket/match
          racket/function
          racket/include
+         srfi/13
          "memory.rkt"
          "registers.rkt"
          "opcodes.rkt"
@@ -22,6 +23,8 @@
  [step (bytes? (parameter/c integer?) . -> . void)]
  [print-registers (integer? . -> . void)]
  [print-register (integer? integer? . -> . void)])
+
+(provide print-stack)
 
 (provide vm-memory get-vm-register)
 
@@ -231,3 +234,13 @@
   (do ((i 0 (add1 i)))
       ((= i (register-count)))
     (print-register i radix out)))
+
+(define hex (curryr number->string 16))
+
+(define (print-stack sp0 sp [radix 10])
+  ;; sub1 is a trick to have last element included
+  (for ([addr (in-range (- sp0 8) (sub1 sp) -8)])
+    (let ([v (load-qword (vm-memory (current-vm)) addr)])
+      (printf "~a: ~a~%"
+              (string-pad (hex addr) 8 #\0)
+              (number->string v radix)))))

@@ -93,6 +93,8 @@
    [(or (string=? what "registers")
         (string=? what "regs"))
     (vm:print-registers radix)]
+   [(string=? what "stack")
+    (vm:print-stack sp0 (sp) radix)]
    [else
     (define bc (register->bytecode (string->symbol what)))
     (if bc
@@ -202,7 +204,8 @@
                     #t #f
                     @S{registers - print all registers
 				   regs - print all registers
-				   <register> - print register value}
+				   <register> - print register value
+                                   stack - print stack}
                     (lambda (args) (do-print (car args))))
 
   (register-command "print/x" "p/x"

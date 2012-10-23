@@ -1,5 +1,10 @@
 2012-10-23  Philippe Mechaï  <philippe.mechai@gmail.com>
 
+	* debugger/core.rkt (do-print): add stack printing command
+
+	* vm/core.rkt (print-stack): added a function that prints the
+	stack between two addresses (initial stack pointer and current)
+
 	* debugger/cli.rkt (cli): cli accept a #:complete argument which
 	is a procedure called for readline completion
 
