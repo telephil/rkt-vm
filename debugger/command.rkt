@@ -12,7 +12,7 @@
 ;;  [invoke-command
 ;;   (string? list? boolean? . -> . any/c)])
 
-(provide commands-help register-command invoke-command)
+(provide commands-help register-command invoke-command command-list)
 
 (struct command (name
                  short-name
@@ -65,3 +65,6 @@
      (raise-user-error (format "~a: no program running" name))]
    [else
     ((command-proc cmd) args)]))
+
+(define (command-list)
+  (hash-keys commands))

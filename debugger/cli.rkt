@@ -30,10 +30,12 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CLI
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(define (cli #:handler [handler values]
-             #:stop    [stop    #f]
-             #:prompt  [prompt  "> "]
-             #:history [history ".history"])
+(define (cli #:handler  [handler values]
+             #:stop     [stop    #f]
+             #:prompt   [prompt  "> "]
+             #:complete [complete #f]
+             #:history  [history ".history"])
+  (set-completion-function! complete)
   (load-history history)
   (sequence-for-each values (in-producer read-one-line stop handler prompt))
   (save-history history))

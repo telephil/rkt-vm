@@ -1,3 +1,14 @@
+2012-10-23  Philippe Mechaï  <philippe.mechai@gmail.com>
+
+	* debugger/cli.rkt (cli): cli accept a #:complete argument which
+	is a procedure called for readline completion
+
+	* debugger/command.rkt (command-list): List of registered commands
+	names
+
+	* debugger/core.rkt (complete): Readline completion function that
+	completes debugger commands
+
 2012-10-22  Philippe Mechaï  <philippe.mechai@gmail.com>
 
 	* vm/memory.rkt: added load and store function that also increase

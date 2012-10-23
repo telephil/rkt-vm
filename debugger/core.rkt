@@ -217,37 +217,21 @@
                     "- binary output version of print"
                     (lambda (args) (do-print (car args) 2))))
 
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ;; CLI
-;; ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; (define (handle-line line)
-;;   (match-define (list-rest cmd args)
-;;                 (string-split line " "))
-;;   ())
-
-;; (define (read-one-line)
-;;   (define line (readline "vmdb> "))
-;;   (when (string? line)
-;;     (with-handlers ([exn:fail:user?
-;;                      (lambda (e) (eprintf "error: ~a~%" (exn-message e)))])
-;;       (let ([res (handle-line (string-trim line " " #:repeat? #t))])
-;;         (when res
-;;           (add-history line))
-;;         res))))
-
-;; (define (cli)
-;;   (letrec ([loop (lambda ()
-;;                    (unless (eq? 'quit (read-one-line))
-;;                      (loop)))])
-;;     (loop)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; readline history filename
+;; readline helpers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (history-filename)
   (define homedir (find-system-path 'home-dir))
   (path->string (build-path homedir ".vmdb_history")))
+
+(define (complete what)
+  (filter (lambda (cmd)
+            (define wlen (string-length what))
+            (define clen (string-length cmd))
+            (if (<= wlen clen)
+                (string=? (substring cmd 0 wlen) what)
+                #f))
+          (command-list)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Debugger entry point
@@ -260,6 +244,7 @@
                                                (program-running)))
        #:stop 'quit
        #:prompt "vmdb> "
+       #:complete complete
        #:history (history-filename))
   (printf "Bye.~%")
   (values))
