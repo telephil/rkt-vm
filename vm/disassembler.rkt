@@ -6,7 +6,6 @@
          srfi/13 ;; for string-pad
          "fetch.rkt"
          "registers.rkt"
-         "memory.rkt"
          "opcodes.rkt"
          "../utils/bits.rkt")
 
@@ -29,7 +28,6 @@
   (bytecode->register reg))
 
 (define (num->string num)
-  ;(string-pad (number->string num 16) 16 #\0)
   (number->string num 16))
 
 (define (ptr->string reg off)

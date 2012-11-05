@@ -5,7 +5,7 @@
          racket/function
          racket/include
          srfi/13
-         "memory.rkt"
+         "io.rkt"
          "registers.rkt"
          "opcodes.rkt"
          "fetch.rkt"
@@ -45,7 +45,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (define (init memsize)
   (current-vm
-   (vm (create-memory memsize)
+   (vm (make-bytes memsize 0)
        (for/vector ([i (in-range (register-count))])
          (make-parameter 0))
        (make-parameter 0))))
@@ -123,7 +123,7 @@
 
 (define (ptr-trans mem)
   (lambda (reg off)
-    (make-collection-ptr mem (+ ((reg-trans reg)) off) load-qword store-qword)))
+    (make-collection-ptr mem (+ ((reg-trans reg)) off) inl outl)))
 
 (define (fetch-instruction mem ptr)
   (parameterize ([register-bytecode-transformer reg-trans]
@@ -207,9 +207,9 @@
 (define (read-loop loop mem idx)
   (define b (read-byte))
   (cond
-   [(eof-object? b) (store-byte mem idx END)]
+   [(eof-object? b) (outb mem idx END)]
    [else
-    (store-byte mem idx b)
+    (outb mem idx b)
     (loop loop mem (add1 idx))]))
 
 (define (read-program)
@@ -240,7 +240,7 @@
 (define (print-stack sp0 sp [radix 10])
   ;; sub1 is a trick to have last element included
   (for ([addr (in-range (- sp0 8) (sub1 sp) -8)])
-    (let ([v (load-qword (vm-memory (current-vm)) addr)])
+    (let ([v (inl (vm-memory (current-vm)) addr)])
       (printf "~a: ~a~%"
               (string-pad (hex addr) 8 #\0)
               (number->string v radix)))))
